@@ -1,0 +1,6 @@
+@Zapatitos.API_HostAddress = http://localhost:5131
+
+GET {{Zapatitos.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+tools/
+.od/
+dist/
+*.log
+.env
+
+# .NET
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# OS
+.DS_Store
+Thumbs.db
+
+# User Secrets
+# (Ya están fuera del proyecto, pero por seguridad extra)
+appsettings.Development.json
+secrets.json
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa]rm/
+[Aa]rm64/

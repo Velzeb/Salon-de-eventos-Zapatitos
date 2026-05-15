@@ -1,0 +1,282 @@
+Compilando...
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM roles AS r)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM usuarios AS u
+          WHERE u.email = 'admin@zapatitos.com')
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM configuraciones_web AS c)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM metodos_pago AS m)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM categorias_financieras AS c)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM disponibilidad_config AS d)
+--> Base de datos inicializada correctamente.
+--> Base de datos inicializada correctamente.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5131
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Users\Carlos\Desktop\Taller 2\proyecto\backend\src\Zapatitos.API
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (6ms) [Parameters=[@__email_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT t.id, t.activo, t.creado_en, t.eliminado_en, t.email, t.modificado_en, t.password_hash, t.ultima_conexion, t.username, t.version, t0.rol_id, t0.usuario_id, t0.id, t0.creado_en, t0.descripcion, t0.eliminado_en, t0.modificado_en, t0.nombre, t0.version
+      FROM (
+          SELECT u.id, u.activo, u.creado_en, u.eliminado_en, u.email, u.modificado_en, u.password_hash, u.ultima_conexion, u.username, u.version
+          FROM usuarios AS u
+          WHERE u.email = @__email_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN (
+          SELECT u0.rol_id, u0.usuario_id, r.id, r.creado_en, r.descripcion, r.eliminado_en, r.modificado_en, r.nombre, r.version
+          FROM usuarios_roles AS u0
+          INNER JOIN roles AS r ON u0.rol_id = r.id
+      ) AS t0 ON t.id = t0.usuario_id
+      ORDER BY t.id, t0.rol_id, t0.usuario_id
+info: Program[0]
+      --> Usuario Autenticado: admin | Roles: Administrador
+fail: Microsoft.EntityFrameworkCore.Database.Command[20102]
+      Failed executing DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT e.id, e.creado_en, e.eliminado_en, e.estado, e.fecha_ingreso, e.modificado_en, e.nombre_completo, e.pago_por_evento, e.puesto, e.telefono, e.usuario_id, e.version
+      FROM empleados AS e
+fail: Microsoft.EntityFrameworkCore.Query[10100]
+      An exception occurred while iterating over the results of a query for context type 'Zapatitos.Infrastructure.Persistence.ZapatitosDbContext'.
+      Npgsql.PostgresException (0x80004005): 42703: no existe la columna e.pago_por_evento
+      
+      POSITION: 106
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+         at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+        Exception data:
+          Severity: ERROR
+          SqlState: 42703
+          MessageText: no existe la columna e.pago_por_evento
+          Position: 106
+          File: parse_relation.c
+          Line: 3827
+          Routine: errorMissingColumn
+      Npgsql.PostgresException (0x80004005): 42703: no existe la columna e.pago_por_evento
+      
+      POSITION: 106
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+         at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+        Exception data:
+          Severity: ERROR
+          SqlState: 42703
+          MessageText: no existe la columna e.pago_por_evento
+          Position: 106
+          File: parse_relation.c
+          Line: 3827
+          Routine: errorMissingColumn
+fail: Zapatitos.API.Middleware.ExceptionHandlingMiddleware[0]
+      Ocurrió una excepción no controlada: 42703: no existe la columna e.pago_por_evento
+      
+      POSITION: 106
+      Npgsql.PostgresException (0x80004005): 42703: no existe la columna e.pago_por_evento
+      
+      POSITION: 106
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+         at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+         at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync[TSource](IQueryable`1 source, CancellationToken cancellationToken)
+         at Zapatitos.Application.Features.Finanzas.Queries.GetCalculoNomina.GetCalculoNominaQueryHandler.Handle(GetCalculoNominaQuery request, CancellationToken cancellationToken) in C:\Users\Carlos\Desktop\Taller 2\proyecto\backend\src\Zapatitos.Application\Features\Finanzas\Queries\GetCalculoNomina\GetCalculoNominaQuery.cs:line 43
+         at Zapatitos.Application.Common.Behaviors.ValidationBehavior`2.Handle(TRequest request, RequestHandlerDelegate`1 next, CancellationToken cancellationToken) in C:\Users\Carlos\Desktop\Taller 2\proyecto\backend\src\Zapatitos.Application\Common\Behaviors\ValidationBehavior.cs:line 35
+         at Zapatitos.API.Controllers.FinanzasController.GetNominasPendientes() in C:\Users\Carlos\Desktop\Taller 2\proyecto\backend\src\Zapatitos.API\Controllers\FinanzasController.cs:line 89
+         at lambda_method174(Closure, Object)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+         at Program.<>c.<<<Main>$>b__0_4>d.MoveNext() in C:\Users\Carlos\Desktop\Taller 2\proyecto\backend\src\Zapatitos.API\Program.cs:line 146
+      --- End of stack trace from previous location ---
+         at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+         at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+         at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+         at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+         at Zapatitos.API.Middleware.ExceptionHandlingMiddleware.InvokeAsync(HttpContext context) in C:\Users\Carlos\Desktop\Taller 2\proyecto\backend\src\Zapatitos.API\Middleware\ExceptionHandlingMiddleware.cs:line 29
+        Exception data:
+          Severity: ERROR
+          SqlState: 42703
+          MessageText: no existe la columna e.pago_por_evento
+          Position: 106
+          File: parse_relation.c
+          Line: 3827
+          Routine: errorMissingColumn
+info: Program[0]
+      --> Usuario Autenticado: admin | Roles: Administrador
+warn: Microsoft.EntityFrameworkCore.Query[20504]
+      Compiling a query which loads related collections for more than one collection navigation, either via 'Include' or through projection, but no 'QuerySplittingBehavior' has been configured. By default, Entity Framework will use 'QuerySplittingBehavior.SingleQuery', which can potentially result in slow query performance. See https://go.microsoft.com/fwlink/?linkid=2134277 for more information. To identify the query that's triggering this warning call 'ConfigureWarnings(w => w.Throw(RelationalEventId.MultipleCollectionIncludeWarning))'.
+fail: Microsoft.EntityFrameworkCore.Database.Command[20102]
+      Failed executing DbCommand (1ms) [Parameters=[@__request_EventoId_0='?' (DbType = Int64)], CommandType='Text', CommandTimeout='30']
+      SELECT t.id, t.cantidad_ninos_estimada, t.creado_en, t.eliminado_en, t.estado, t.fecha_evento, t.hora_fin, t.hora_inicio, t.modificado_en, t.notas_admin, t.paquete_id, t.precio_total, t.saldo_pendiente, t.version, t.id0, t.capacidad_ninos, t.creado_en0, t.descripcion, t.descuento, t.duracion_horas, t.eliminado_en0, t.estado0, t.modificado_en0, t.nombre, t.precio_base, t.version0, t0.id, t0.asignado_a, t0.creado_en, t0.descripcion, t0.eliminado_en, t0.estado, t0.evento_id, t0.fecha_completada, t0.modificado_en, t0.nombre_tarea, t0.version, t0.id0, t0.creado_en0, t0.eliminado_en0, t0.estado0, t0.fecha_ingreso, t0.modificado_en0, t0.nombre_completo, t0.pago_por_evento, t0.puesto, t0.telefono, t0.usuario_id, t0.version0, t2.id, t2.cantidad, t2.creado_en, t2.eliminado_en, t2.empleado_id, t2.evento_id, t2.modificado_en, t2.precio_unitario_momento, t2.servicio_id, t2.total_consumo, t2.version, t2.id0, t2.articulo_inventario_id, t2.cantidad_minima, t2.costo_base, t2.creado_en0, t2.descripcion, t2.eliminado_en0, t2.es_extra, t2.estado, t2.modificado_en0, t2.nombre, t2.precio_proveedor, t2.producto_produccion_id, t2.proveedor_id, t2.tipo, t2.version0
+      FROM (
+          SELECT e.id, e.cantidad_ninos_estimada, e.creado_en, e.eliminado_en, e.estado, e.fecha_evento, e.hora_fin, e.hora_inicio, e.modificado_en, e.notas_admin, e.paquete_id, e.precio_total, e.saldo_pendiente, e.version, p.id AS id0, p.capacidad_ninos, p.creado_en AS creado_en0, p.descripcion, p.descuento, p.duracion_horas, p.eliminado_en AS eliminado_en0, p.estado AS estado0, p.modificado_en AS modificado_en0, p.nombre, p.precio_base, p.version AS version0
+          FROM eventos AS e
+          INNER JOIN paquetes AS p ON e.paquete_id = p.id
+          WHERE e.id = @__request_EventoId_0
+          LIMIT 1
+      ) AS t
+      LEFT JOIN (
+          SELECT t1.id, t1.asignado_a, t1.creado_en, t1.descripcion, t1.eliminado_en, t1.estado, t1.evento_id, t1.fecha_completada, t1.modificado_en, t1.nombre_tarea, t1.version, e0.id AS id0, e0.creado_en AS creado_en0, e0.eliminado_en AS eliminado_en0, e0.estado AS estado0, e0.fecha_ingreso, e0.modificado_en AS modificado_en0, e0.nombre_completo, e0.pago_por_evento, e0.puesto, e0.telefono, e0.usuario_id, e0.version AS version0
+          FROM tareas_operativas AS t1
+          LEFT JOIN empleados AS e0 ON t1.asignado_a = e0.id
+      ) AS t0 ON t.id = t0.evento_id
+      LEFT JOIN (
+          SELECT c.id, c.cantidad, c.creado_en, c.eliminado_en, c.empleado_id, c.evento_id, c.modificado_en, c.precio_unitario_momento, c.servicio_id, c.total_consumo, c.version, s.id AS id0, s.articulo_inventario_id, s.cantidad_minima, s.costo_base, s.creado_en AS creado_en0, s.descripcion, s.eliminado_en AS eliminado_en0, s.es_extra, s.estado, s.modificado_en AS modificado_en0, s.nombre, s.precio_proveedor, s.producto_produccion_id, s.proveedor_id, s.tipo, s.version AS version0
+          FROM consumos_extras AS c
+          INNER JOIN servicios AS s ON c.servicio_id = s.id
+      ) AS t2 ON t.id = t2.evento_id
+      ORDER BY t.id, t.id0, t0.id, t0.id0, t2.id
+fail: Microsoft.EntityFrameworkCore.Query[10100]
+      An exception occurred while iterating over the results of a query for context type 'Zapatitos.Infrastructure.Persistence.ZapatitosDbContext'.
+      Npgsql.PostgresException (0x80004005): 42703: no existe la columna e0.pago_por_evento
+      
+      POSITION: 2105
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+         at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+        Exception data:
+          Severity: ERROR
+          SqlState: 42703
+          MessageText: no existe la columna e0.pago_por_evento
+          Position: 2105
+          File: parse_relation.c
+          Line: 3827
+          Routine: errorMissingColumn
+      Npgsql.PostgresException (0x80004005): 42703: no existe la columna e0.pago_por_evento
+      
+      POSITION: 2105
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+         at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+        Exception data:
+          Severity: ERROR
+          SqlState: 42703
+          MessageText: no existe la columna e0.pago_por_evento
+          Position: 2105
+          File: parse_relation.c
+          Line: 3827
+          Routine: errorMissingColumn
+fail: Zapatitos.API.Middleware.ExceptionHandlingMiddleware[0]
+      Ocurrió una excepción no controlada: 42703: no existe la columna e0.pago_por_evento
+      
+      POSITION: 2105
+      Npgsql.PostgresException (0x80004005): 42703: no existe la columna e0.pago_por_evento
+      
+      POSITION: 2105
+         at Npgsql.Internal.NpgsqlConnector.ReadMessageLong(Boolean async, DataRowLoadingMode dataRowLoadingMode, Boolean readingNotifications, Boolean isReadingPrependedMessage)
+         at System.Runtime.CompilerServices.PoolingAsyncValueTaskMethodBuilder`1.StateMachineBox`1.System.Threading.Tasks.Sources.IValueTaskSource<TResult>.GetResult(Int16 token)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlDataReader.NextResult(Boolean async, Boolean isConsuming, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteReader(Boolean async, CommandBehavior behavior, CancellationToken cancellationToken)
+         at Npgsql.NpgsqlCommand.ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Storage.RelationalCommand.ExecuteReaderAsync(RelationalCommandParameterObject parameterObject, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.InitializeReaderAsync(AsyncEnumerator enumerator, CancellationToken cancellationToken)
+         at Npgsql.EntityFrameworkCore.PostgreSQL.Storage.Internal.NpgsqlExecutionStrategy.ExecuteAsync[TState,TResult](TState state, Func`4 operation, Func`4 verifySucceeded, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.Internal.SingleQueryingEnumerable`1.AsyncEnumerator.MoveNextAsync()
+         at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+         at Microsoft.EntityFrameworkCore.Query.ShapedQueryCompilingExpressionVisitor.SingleOrDefaultAsync[TSource](IAsyncEnumerable`1 asyncEnumerable, CancellationToken cancellationToken)
+         at Zapatitos.Application.Features.Operativo.Queries.GetEventoOperativo.GetEventoOperativoQueryHandler.Handle(GetEventoOperativoQuery request, CancellationToken cancellationToken) in C:\Users\Carlos\Desktop\Taller 2\proyecto\backend\src\Zapatitos.Application\Features\Operativo\Queries\GetEventoOperativo\GetEventoOperativoQuery.cs:line 58
+         at Zapatitos.Application.Common.Behaviors.ValidationBehavior`2.Handle(TRequest request, RequestHandlerDelegate`1 next, CancellationToken cancellationToken) in C:\Users\Carlos\Desktop\Taller 2\proyecto\backend\src\Zapatitos.Application\Common\Behaviors\ValidationBehavior.cs:line 35
+         at Zapatitos.API.Controllers.OperativoController.GetEventoById(Int64 eventoId) in C:\Users\Carlos\Desktop\Taller 2\proyecto\backend\src\Zapatitos.API\Controllers\OperativoController.cs:line 17
+         at lambda_method184(Closure, Object)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ActionMethodExecutor.AwaitableObjectResultExecutor.Execute(ActionContext actionContext, IActionResultTypeMapper mapper, ObjectMethodExecutor executor, Object controller, Object[] arguments)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeActionMethodAsync>g__Awaited|12_0(ControllerActionInvoker invoker, ValueTask`1 actionResultValueTask)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeNextActionFilterAsync>g__Awaited|10_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Rethrow(ActionExecutedContextSealed context)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.Next(State& next, Scope& scope, Object& state, Boolean& isCompleted)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ControllerActionInvoker.<InvokeInnerFilterAsync>g__Awaited|13_0(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeFilterPipelineAsync>g__Awaited|20_0(ResourceInvoker invoker, Task lastTask, State next, Scope scope, Object state, Boolean isCompleted)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+         at Microsoft.AspNetCore.Mvc.Infrastructure.ResourceInvoker.<InvokeAsync>g__Awaited|17_0(ResourceInvoker invoker, Task task, IDisposable scope)
+         at Program.<>c.<<<Main>$>b__0_4>d.MoveNext() in C:\Users\Carlos\Desktop\Taller 2\proyecto\backend\src\Zapatitos.API\Program.cs:line 146
+      --- End of stack trace from previous location ---
+         at Microsoft.AspNetCore.Authorization.AuthorizationMiddleware.Invoke(HttpContext context)
+         at Microsoft.AspNetCore.Authentication.AuthenticationMiddleware.Invoke(HttpContext context)
+         at Swashbuckle.AspNetCore.SwaggerUI.SwaggerUIMiddleware.Invoke(HttpContext httpContext)
+         at Swashbuckle.AspNetCore.Swagger.SwaggerMiddleware.Invoke(HttpContext httpContext, ISwaggerProvider swaggerProvider)
+         at Zapatitos.API.Middleware.ExceptionHandlingMiddleware.InvokeAsync(HttpContext context) in C:\Users\Carlos\Desktop\Taller 2\proyecto\backend\src\Zapatitos.API\Middleware\ExceptionHandlingMiddleware.cs:line 29
+        Exception data:
+          Severity: ERROR
+          SqlState: 42703
+          MessageText: no existe la columna e0.pago_por_evento
+          Position: 2105
+          File: parse_relation.c
+          Line: 3827
+          Routine: errorMissingColumn

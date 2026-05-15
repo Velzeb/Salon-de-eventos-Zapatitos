@@ -1,0 +1,122 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-main: 'Inter', sans-serif;
+  --font-display: 'Inter', sans-serif;
+
+  /* Professional Enterprise Palette */
+  --primary: #3b82f6; /* Blue 600 - More standard for enterprise than indigo */
+  --primary-light: #60a5fa;
+  --primary-dark: #2563eb;
+  --primary-glow: rgba(59, 130, 246, 0.1);
+  --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  
+  --secondary: #10b981; /* Emerald 500 - Standard for success */
+  --secondary-glow: rgba(16, 185, 129, 0.08);
+  
+  --accent: #ef4444; /* Red 500 - Standard for alerts */
+  --accent-glow: rgba(239, 68, 68, 0.08);
+
+  /* Backgrounds & Surfaces (Cleaner & Professional) */
+  --bg-main: #f9fafb;     /* Slate 50 - Soft background */
+  --bg-secondary: #ffffff; /* Pure White - Main cards */
+  --bg-dark: #1f2937;      /* Slate 800 - Professional Dark (not harsh) */
+  --bg-glass: rgba(255, 255, 255, 0.8);
+  
+  /* Text (High Contrast & Legible) */
+  --text-main: #111827;    /* Slate 900 - Headings */
+  --text-muted: #4b5563;   /* Slate 600 - Body text */
+  --text-dim: #9ca3af;     /* Slate 400 - Secondary info */
+  --text-inverse: #ffffff;
+  
+  /* Borders */
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+  
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
+  --radius-full: 9999px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --shadow-premium: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+
+  --transition: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@layer base {
+  html, body, #root {
+    @apply m-0 p-0 min-h-screen bg-[#f8fafc];
+  }
+  
+  body {
+    @apply font-sans text-[#0f172a] antialiased leading-relaxed overflow-x-hidden;
+    font-family: var(--font-main);
+  }
+
+  h1, h2, h3, h4, h5 {
+    @apply font-display font-extrabold text-[#0f172a] tracking-tight leading-tight;
+  }
+}
+
+@layer components {
+  .glass-effect {
+    @apply bg-white/70 backdrop-blur-xl border border-white/30 shadow-premium;
+  }
+  
+  .btn-primary-glow {
+    @apply bg-primary-gradient text-white font-bold py-3 px-6 rounded-md transition-all
+           hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]
+           shadow-[0_10px_20px_-5px_rgba(99,102,241,0.3)];
+  }
+}
+
+/* Fix for unexpected empty space from notification library accessibility section */
+section[aria-label="Notifications alt+T"] {
+  display: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  position: absolute !important;
+  pointer-events: none !important;
+}
+
+/* === PRINT STYLES === */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  @page {
+    margin: 1cm;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+}
+
+.print-only {
+  display: none;
+}
