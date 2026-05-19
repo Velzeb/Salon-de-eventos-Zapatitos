@@ -1,91 +1,118 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LogOut, LayoutDashboard, Bell } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom';
+import { CalendarPlus, LayoutDashboard, LogOut, UserRound } from 'lucide-react';
 import { authService } from '../../services/authService';
+import { clientePortalService, type PerfilCliente } from '../../services/clientePortalService';
 import logo from '../../assets/logoZapatitos.webp';
-import './ClientLayout.css';
+
+const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+  `inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors ${
+    isActive ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+  }`;
 
 const ClientLayout = () => {
-  const location = useLocation();
-  const userName = authService.getUserName() || 'Cliente';
+  const navigate = useNavigate();
+  const [perfil, setPerfil] = useState<PerfilCliente | null>(null);
+  const fallbackName = authService.getUserName() || 'Cliente';
+  const displayName = perfil?.nombreCompleto || fallbackName;
+  const initials = displayName
+    .split(' ')
+    .filter(Boolean)
+    .map((word) => word[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  useEffect(() => {
+    let active = true;
+    clientePortalService
+      .getPerfil()
+      .then((data) => {
+        if (active) setPerfil(data);
+      })
+      .catch(() => {
+        if (active) setPerfil(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
-    <div className="client-layout">
-      {/* GLOW DECORATION */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent z-[100]" />
-      
-      <header className="client-topbar">
-        <div className="container mx-auto px-6 flex items-center justify-between h-20">
-          <div className="client-brand">
-            <Link to="/cliente/dashboard" className="brand-link group">
-              <div className="w-12 h-12 bg-white rounded-2xl shadow-xl shadow-slate-200/50 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 border border-slate-100">
-                <img src={logo} alt="Zapatitos" className="w-8 h-8 object-contain" />
-              </div>
-              <div className="brand-text">
-                <span className="brand-name">Zapatitos</span>
-                <span className="brand-tagline">Portal de Experiencias</span>
-              </div>
-            </Link>
-          </div>
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <Link to="/cliente/dashboard" className="flex min-w-0 items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white">
+              <img src={logo} alt="Zapatitos" className="h-7 w-7 object-contain" />
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-base font-black leading-tight">Portal de cliente</span>
+              <span className="block truncate text-xs font-medium text-slate-500">Zapatitos</span>
+            </span>
+          </Link>
 
-          <nav className="hidden md:flex items-center gap-10">
-            <Link 
-              to="/cliente/dashboard" 
-              className={`nav-link ${location.pathname.includes('dashboard') ? 'active' : ''}`}
+          <nav className="hidden items-center gap-1 md:flex">
+            <NavLink to="/cliente/dashboard" className={navLinkClass}>
+              <LayoutDashboard size={17} />
+              Mis eventos
+            </NavLink>
+            <NavLink to="/cliente/perfil" className={navLinkClass}>
+              <UserRound size={17} />
+              Perfil
+            </NavLink>
+            <Link
+              to="/reservar"
+              className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
             >
-              <LayoutDashboard size={18} /> 
-              <span>Mis Eventos</span>
-            </Link>
-            <Link 
-              to="/reservar" 
-              className="nav-link"
-            >
-              <span>Nueva Reserva</span>
+              <CalendarPlus size={17} />
+              Nueva reserva
             </Link>
           </nav>
-          
-          <div className="client-actions">
-            <button className="icon-btn">
-              <Bell size={20} />
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/cliente/perfil')}
+              className="hidden items-center gap-3 rounded-md border border-slate-200 bg-white px-3 py-2 text-left transition-colors hover:bg-slate-50 sm:flex"
+            >
+              {perfil?.fotoPerfilUrl ? (
+                <img src={perfil.fotoPerfilUrl} alt={displayName} className="h-8 w-8 rounded-full object-cover" />
+              ) : (
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-xs font-black text-indigo-700">
+                  {initials || 'C'}
+                </span>
+              )}
+              <span className="max-w-40 truncate text-sm font-bold">{displayName}</span>
             </button>
-            
-            <div className="h-6 w-px bg-slate-200 mx-2" />
-
-            <div className="client-user group">
-              <div className="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600 font-black text-sm border-2 border-white shadow-sm group-hover:border-indigo-100 transition-all">
-                {userName.charAt(0).toUpperCase()}
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-black text-slate-800 leading-none">{userName}</span>
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">Cliente VIP</span>
-              </div>
-            </div>
-
-            <button className="logout-btn-premium" onClick={() => authService.logout('/cliente/login')}>
-              <LogOut size={18} />
+            <button
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-rose-50 hover:text-rose-600"
+              onClick={() => authService.logout('/cliente/login')}
+              title="Cerrar sesión"
+            >
+              <LogOut size={19} />
             </button>
           </div>
         </div>
+
+        <nav className="flex gap-1 overflow-x-auto border-t border-slate-100 px-4 py-2 md:hidden">
+          <NavLink to="/cliente/dashboard" className={navLinkClass}>
+            <LayoutDashboard size={16} />
+            Mis eventos
+          </NavLink>
+          <NavLink to="/cliente/perfil" className={navLinkClass}>
+            <UserRound size={16} />
+            Perfil
+          </NavLink>
+          <Link to="/reservar" className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-slate-600">
+            <CalendarPlus size={16} />
+            Reservar
+          </Link>
+        </nav>
       </header>
 
-      <main className="client-content">
-        <div className="container mx-auto px-6">
-          <Outlet />
-        </div>
+      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <Outlet />
       </main>
-
-      <footer className="py-12 border-t border-slate-100 bg-white mt-auto">
-        <div className="container mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="flex items-center gap-3">
-            <img src={logo} alt="Zapatitos" className="w-8 h-8 opacity-30" />
-            <span className="text-slate-300 font-black text-xs uppercase tracking-widest italic">Zapatitos Events Management — 2026</span>
-          </div>
-          <div className="flex items-center gap-8">
-            <a href="#" className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-primary transition-colors">Términos</a>
-            <a href="#" className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-primary transition-colors">Privacidad</a>
-            <a href="#" className="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-primary transition-colors">Soporte</a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

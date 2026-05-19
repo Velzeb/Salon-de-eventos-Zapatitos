@@ -27,7 +27,10 @@ public record ServicioDto(
     long? ProveedorId,
     string? ArticuloNombre,
     string? ProductoNombre,
-    string? ProveedorNombre
+    string? ProveedorNombre,
+    bool RequiereTemporizador,
+    int DuracionMinutos,
+    string? ImagenUrl
 );
 
 public class GetServiciosQueryHandler : IRequestHandler<GetServiciosQuery, Result<IEnumerable<ServicioDto>>>
@@ -64,7 +67,14 @@ public class GetServiciosQueryHandler : IRequestHandler<GetServiciosQuery, Resul
             s.ProveedorId,
             s.ArticuloInventario?.Nombre,
             s.ProductoProduccion?.Nombre,
-            s.Proveedor?.Nombre
+            s.Proveedor?.Nombre,
+            s.RequiereTemporizador,
+            s.DuracionMinutos,
+            s.Tipo == TipoServicio.ArticuloInventario 
+                ? (s.ArticuloInventario != null ? s.ArticuloInventario.ImagenUrl : s.ImagenUrl)
+                : s.Tipo == TipoServicio.ProductoProduccion
+                    ? (s.ProductoProduccion != null ? s.ProductoProduccion.ImagenUrl : s.ImagenUrl)
+                    : s.ImagenUrl
         ));
 
         return Result<IEnumerable<ServicioDto>>.Success(dtos);

@@ -13,6 +13,7 @@ import OperativoPage from './pages/Operativo/OperativoPage';
 import ServiciosPage from './pages/Servicios/ServiciosPage';
 import ProduccionPage from './pages/Produccion/ProduccionPage';
 import ProveedoresPage from './pages/Proveedores/ProveedoresPage';
+import ClientesPage from './pages/Clientes/ClientesPage';
 import DetalleOperativoPage from './pages/Operativo/DetalleOperativoPage';
 import LandingPage from './pages/Landing/LandingPage';
 import BookingPage from './pages/Landing/BookingPage';
@@ -23,6 +24,10 @@ import EventoClienteDetailPage from './pages/Cliente/EventoClienteDetailPage';
 import ClientePerfilPage from './pages/Cliente/ClientePerfilPage';
 import AdminLayout from './components/layout/AdminLayout';
 import ClientLayout from './components/layout/ClientLayout';
+import EmployeeLayout from './components/layout/EmployeeLayout';
+import EmpleadoJornadaPage from './pages/Empleado/EmpleadoJornadaPage';
+import EmpleadoEventosPage from './pages/Empleado/EmpleadoEventosPage';
+import EmpleadoEventoDetailPage from './pages/Empleado/EmpleadoEventoDetailPage';
 import { authService } from './services/authService';
 import Toaster from './components/common/Toaster';
 
@@ -50,7 +55,7 @@ const AdminIndexRedirect = () => {
   if (authService.hasRole(['Administrador'])) {
     return <Navigate to="dashboard" replace />;
   }
-  return <Navigate to="operativo" replace />;
+  return <Navigate to="/empleado/jornada" replace />;
 };
 
 function App() {
@@ -78,6 +83,7 @@ function App() {
           <Route path="cms" element={<ProtectedRoute roles={['Administrador']} redirectTo="/admin/operativo"><CMSPage /></ProtectedRoute>} />
           <Route path="reservas" element={<ProtectedRoute roles={['Administrador']} redirectTo="/admin/operativo"><ReservasPage /></ProtectedRoute>} />
           <Route path="reservas/nueva" element={<ProtectedRoute roles={['Administrador']} redirectTo="/admin/operativo"><ReservaNuevaPage /></ProtectedRoute>} />
+          <Route path="clientes" element={<ProtectedRoute roles={['Administrador']} redirectTo="/admin/operativo"><ClientesPage /></ProtectedRoute>} />
           <Route path="inventario" element={<ProtectedRoute roles={['Administrador']} redirectTo="/admin/operativo"><InventarioPage /></ProtectedRoute>} />
           <Route path="proveedores" element={<ProtectedRoute roles={['Administrador']} redirectTo="/admin/operativo"><ProveedoresPage /></ProtectedRoute>} />
           <Route path="produccion" element={<ProtectedRoute roles={['Administrador']} redirectTo="/admin/operativo"><ProduccionPage /></ProtectedRoute>} />
@@ -91,6 +97,20 @@ function App() {
           <Route path="operativo" element={<OperativoPage />} />
           <Route path="operativo/:id" element={<DetalleOperativoPage />} />
           <Route path="reservas/:id" element={<Navigate to="../operativo/:id" replace />} />
+        </Route>
+
+        <Route
+          path="/empleado"
+          element={
+            <ProtectedRoute roles={['Empleado']} redirectTo="/login">
+              <EmployeeLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="jornada" replace />} />
+          <Route path="jornada" element={<EmpleadoJornadaPage />} />
+          <Route path="eventos" element={<EmpleadoEventosPage />} />
+          <Route path="eventos/:id" element={<EmpleadoEventoDetailPage />} />
         </Route>
 
         <Route

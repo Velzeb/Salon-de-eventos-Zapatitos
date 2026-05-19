@@ -1,42 +1,72 @@
-import { useEffect, useState } from 'react';
-import { 
-  Wrench, 
-  Search, 
-  Plus, 
-  RefreshCw,
-  Trash2,
-  Edit,
+import { useEffect, useMemo, useState } from 'react';
+import {
   Boxes,
+  Edit,
+  Layers,
+  LayoutGrid,
+  List,
+  Package,
+  Plus,
+  RefreshCw,
   Scale,
-  Package
+  Search,
+  Trash2,
+  Wrench
 } from 'lucide-react';
-import { produccionService, type ProductoProduccion } from '../../services/produccionService';
+import type { LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { produccionService, type ProductoProduccion } from '../../services/produccionService';
+import MediaViewerR2 from '../../components/common/MediaViewerR2';
 import ProductoModal from './components/ProductoModal';
+
+const inputClass =
+  'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10';
+type ViewMode = 'grid' | 'list';
 
 const ProduccionPage = () => {
   const [productos, setProductos] = useState<ProductoProduccion[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProducto, setSelectedProducto] = useState<ProductoProduccion | null>(null);
-
-  useEffect(() => {
-    loadProductos();
-  }, []);
 
   const loadProductos = async () => {
     setLoading(true);
     try {
       const data = await produccionService.getProductos();
       setProductos(data);
-    } catch (err) {
-      console.error('Error al cargar productos de producción', err);
-      toast.error('Error al cargar los productos de fabricación');
+    } catch {
+      toast.error('Error al cargar los productos de fabricacion');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    void Promise.resolve().then(loadProductos);
+  }, []);
+
+  const filteredProductos = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) return productos;
+
+    return productos.filter(producto => {
+      const ingredientes = producto.ingredientes.map(ingrediente => ingrediente.articuloNombre).join(' ');
+      return [producto.nombre, producto.descripcion, producto.estado, ingredientes]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+        .includes(query);
+    });
+  }, [productos, searchTerm]);
+
+  const stats = useMemo(() => ({
+    total: productos.length,
+    ingredients: productos.reduce((sum, producto) => sum + producto.ingredientes.length, 0),
+    units: productos.reduce((sum, producto) => sum + producto.cantidadProducida, 0),
+    active: productos.filter(producto => producto.estado?.toLowerCase() !== 'inactivo').length
+  }), [productos]);
 
   const handleEdit = (producto: ProductoProduccion) => {
     setSelectedProducto(producto);
@@ -44,157 +74,275 @@ const ProduccionPage = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este producto de fabricación?')) return;
-    
+    if (!window.confirm('Eliminar este producto de fabricacion?')) return;
+
     try {
       await produccionService.deleteProducto(id);
-      toast.success('Producto eliminado con éxito');
-      loadProductos();
-    } catch (err: any) {
-      console.error('Error al eliminar producto', err);
+      toast.success('Producto eliminado');
+      await loadProductos();
+    } catch {
       toast.error('Error al eliminar el producto');
     }
   };
 
-  const filteredProductos = productos.filter(p => 
-    p.nombre.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
-    <div className="space-y-8 pb-12">
-      {/* HEADER SECTION */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-        <div className="flex items-center gap-6">
-          <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
-            <Wrench size={28} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800">
-              Producción Interna
-            </h1>
-            <p className="text-slate-500 text-sm mt-1">
-              Ensamblaje y fabricación de productos
-            </p>
-          </div>
-        </div>
+    <div className="space-y-8 pb-16">
+      <CatalogHeader
+        icon={Wrench}
+        title="Produccion interna"
+        subtitle="Productos fabricados con insumos del inventario y listos para vender como servicios."
+        actionLabel="Nuevo producto"
+        onAction={() => {
+          setSelectedProducto(null);
+          setIsModalOpen(true);
+        }}
+      />
 
-        <button 
-          onClick={() => {
-            setSelectedProducto(null);
-            setIsModalOpen(true);
-          }}
-          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors w-full md:w-auto font-medium" 
-        >
-          <Plus size={20} /> Nuevo Producto
-        </button>
+      <div className="grid gap-4 md:grid-cols-4">
+        <MetricCard label="Productos" value={stats.total.toString()} icon={Boxes} />
+        <MetricCard label="Activos" value={stats.active.toString()} icon={Wrench} />
+        <MetricCard label="Insumos usados" value={stats.ingredients.toString()} icon={Layers} />
+        <MetricCard label="Unidades base" value={stats.units.toString()} icon={Scale} />
       </div>
 
-      {/* SEARCH & FILTERS */}
-      <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col sm:flex-row gap-4">
-        <div className="flex-1 relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-          <input 
-            type="text" 
-            placeholder="Buscar por nombre de producto..." 
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-12 pr-4 py-3 outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all text-sm text-slate-800 placeholder:text-slate-400"
+      <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative lg:w-[460px]">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input
+            className={`${inputClass} pl-11`}
+            placeholder="Buscar producto, insumo o estado"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={event => setSearchTerm(event.target.value)}
           />
         </div>
-        <button 
-          onClick={loadProductos} 
-          className="w-12 h-12 flex items-center justify-center bg-slate-50 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors shrink-0"
-          title="Actualizar"
-        >
-          <RefreshCw size={20} className={loading ? 'animate-spin' : ''} />
-        </button>
+        <div className="flex items-center gap-2">
+          <ViewToggle viewMode={viewMode} onChange={setViewMode} />
+          <button
+            type="button"
+            onClick={loadProductos}
+            className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50"
+            title="Actualizar"
+          >
+            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+          </button>
+        </div>
       </div>
 
-      {/* PRODUCTS LIST */}
-      <div className="grid grid-cols-1 gap-6">
-        {loading ? (
-          Array(3).fill(0).map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl p-6 border border-slate-200 animate-pulse h-40" />
-          ))
-        ) : filteredProductos.length > 0 ? (
-          filteredProductos.map((producto) => (
-            <div key={producto.id} className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex flex-col lg:flex-row gap-8">
-                {/* Left: Info */}
-                <div className="lg:w-1/3 space-y-5">
-                  <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center">
-                      <Boxes size={24} />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => handleEdit(producto)}
-                        className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors"
-                      >
-                        <Edit size={18} />
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(producto.id)}
-                        className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-800 mb-1">{producto.nombre}</h3>
-                    <p className="text-sm text-slate-500 line-clamp-2">{producto.descripcion || 'Sin descripción detallada'}</p>
-                  </div>
-                  <div className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 inline-flex">
-                    <Scale size={16} className="text-amber-600" />
-                    <span className="text-sm font-medium text-slate-700">{producto.cantidadProducida} {producto.unidadMedida || 'unidades'}</span>
-                  </div>
-                </div>
+      {loading ? (
+        <LoadingState label="Cargando productos..." />
+      ) : filteredProductos.length > 0 ? (
+        <div className={viewMode === 'grid' ? 'grid gap-4 xl:grid-cols-2' : 'space-y-3'}>
+          {filteredProductos.map(producto => (
+            viewMode === 'grid' ? (
+              <ProductionCard
+                key={producto.id}
+                producto={producto}
+                onEdit={() => handleEdit(producto)}
+                onDelete={() => handleDelete(producto.id)}
+              />
+            ) : (
+              <ProductionListItem
+                key={producto.id}
+                producto={producto}
+                onEdit={() => handleEdit(producto)}
+                onDelete={() => handleDelete(producto.id)}
+              />
+            )
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          title="No hay productos"
+          subtitle="No encontramos productos de fabricacion con la busqueda actual."
+          actionLabel="Limpiar busqueda"
+          onAction={() => setSearchTerm('')}
+        />
+      )}
 
-                {/* Right: Components/Ingredients */}
-                <div className="lg:w-2/3 bg-slate-50 rounded-xl p-6 border border-slate-100">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Package size={18} className="text-slate-400" />
-                    <span className="text-sm font-semibold text-slate-700">Insumos / Componentes ({producto.ingredientes.length})</span>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {producto.ingredientes.map((ing) => (
-                      <div key={ing.id} className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200 shadow-sm">
-                        <div className="flex items-center gap-2">
-                          <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                          <span className="text-sm font-medium text-slate-700 truncate">{ing.articuloNombre}</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 shrink-0">
-                          {ing.cantidadRequerida} {ing.unidadMedida}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div className="py-24 flex flex-col items-center justify-center space-y-4 bg-white rounded-2xl border border-slate-200">
-             <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300">
-               <Wrench size={32} />
-             </div>
-             <p className="text-slate-500 font-medium text-sm">No hay productos de fabricación registrados aún.</p>
-          </div>
-        )}
-      </div>
-
-      <ProductoModal 
-        isOpen={isModalOpen} 
+      <ProductoModal
+        isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
           setSelectedProducto(null);
-        }} 
-        onSuccess={loadProductos} 
+        }}
+        onSuccess={loadProductos}
         producto={selectedProducto}
       />
     </div>
   );
 };
+
+const CatalogHeader = ({
+  icon: Icon,
+  title,
+  subtitle,
+  actionLabel,
+  onAction
+}: {
+  icon: LucideIcon;
+  title: string;
+  subtitle: string;
+  actionLabel: string;
+  onAction: () => void;
+}) => (
+  <div className="flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex items-center gap-5">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+        <Icon size={26} />
+      </div>
+      <div>
+        <h1 className="text-2xl font-black text-slate-900">{title}</h1>
+        <p className="mt-1 text-sm font-semibold text-slate-500">{subtitle}</p>
+      </div>
+    </div>
+    <button
+      type="button"
+      onClick={onAction}
+      className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-xs font-black text-white shadow-lg shadow-blue-600/20 transition hover:bg-slate-900"
+    >
+      <Plus size={17} />
+      {actionLabel}
+    </button>
+  </div>
+);
+
+const MetricCard = ({ label, value, icon: Icon }: { label: string; value: string; icon: LucideIcon }) => (
+  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-xs font-black uppercase tracking-wide text-slate-400">{label}</p>
+        <p className="mt-2 text-2xl font-black text-slate-900">{value}</p>
+      </div>
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 text-blue-600">
+        <Icon size={22} />
+      </div>
+    </div>
+  </div>
+);
+
+const ViewToggle = ({ viewMode, onChange }: { viewMode: ViewMode; onChange: (value: ViewMode) => void }) => (
+  <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
+    <button type="button" onClick={() => onChange('grid')} className={`flex h-9 w-9 items-center justify-center rounded-lg transition ${viewMode === 'grid' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
+      <LayoutGrid size={16} />
+    </button>
+    <button type="button" onClick={() => onChange('list')} className={`flex h-9 w-9 items-center justify-center rounded-lg transition ${viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
+      <List size={16} />
+    </button>
+  </div>
+);
+
+const ProductionCard = ({ producto, onEdit, onDelete }: { producto: ProductoProduccion; onEdit: () => void; onDelete: () => void }) => (
+  <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg">
+    <div className="grid md:grid-cols-[220px_1fr]">
+      <div className="relative min-h-56 max-h-72 overflow-hidden bg-slate-100">
+        <MediaViewerR2 url={producto.imagenUrl || ''} alt={producto.nombre} className="h-full w-full" />
+        <span className="absolute left-3 top-3 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-xs font-black text-blue-700">
+          <Wrench size={13} />
+          Fabricacion
+        </span>
+      </div>
+
+      <div className="space-y-5 p-5">
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h2 className="truncate text-base font-black text-slate-900">{producto.nombre}</h2>
+            <p className="mt-1 min-h-10 overflow-hidden text-sm font-semibold leading-5 text-slate-500">
+              {producto.descripcion || 'Sin descripcion registrada.'}
+            </p>
+          </div>
+          <div className="flex shrink-0 gap-2">
+            <button type="button" onClick={onEdit} className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-500 transition hover:bg-blue-50 hover:text-blue-600">
+              <Edit size={17} />
+            </button>
+            <button type="button" onClick={onDelete} className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-500 transition hover:bg-rose-50 hover:text-rose-600">
+              <Trash2 size={17} />
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          <MiniStat label="Produce" value={`${producto.cantidadProducida} ${producto.unidadMedida || 'u'}`} />
+          <MiniStat label="Insumos" value={producto.ingredientes.length.toString()} />
+          <MiniStat label="Estado" value={producto.estado || 'Activo'} />
+        </div>
+
+        <div className="rounded-xl bg-slate-50 p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <p className="text-xs font-black uppercase tracking-wide text-slate-400">Insumos</p>
+            <Package size={16} className="text-slate-400" />
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {producto.ingredientes.slice(0, 6).map(ingrediente => (
+              <div key={ingrediente.id} className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2">
+                <span className="truncate text-xs font-bold text-slate-700">{ingrediente.articuloNombre}</span>
+                <span className="shrink-0 rounded-md bg-blue-50 px-2 py-1 text-[11px] font-black text-blue-700">
+                  {ingrediente.cantidadRequerida} {ingrediente.unidadMedida || 'u'}
+                </span>
+              </div>
+            ))}
+            {producto.ingredientes.length === 0 && <p className="text-sm font-semibold text-slate-400">Sin insumos vinculados</p>}
+            {producto.ingredientes.length > 6 && (
+              <span className="rounded-lg bg-slate-900 px-3 py-2 text-xs font-black text-white">+{producto.ingredientes.length - 6} mas</span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  </article>
+);
+
+const ProductionListItem = ({ producto, onEdit, onDelete }: { producto: ProductoProduccion; onEdit: () => void; onDelete: () => void }) => (
+  <article className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-200 hover:shadow-md md:grid-cols-[120px_1fr_auto] md:items-center">
+    <div className="relative h-28 overflow-hidden rounded-xl bg-slate-100 md:h-24">
+      <MediaViewerR2 url={producto.imagenUrl || ''} alt={producto.nombre} className="h-full w-full" />
+    </div>
+    <div className="min-w-0">
+      <span className="mb-2 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">
+        <Wrench size={13} />
+        Fabricacion
+      </span>
+      <h2 className="truncate text-base font-black text-slate-900">{producto.nombre}</h2>
+      <p className="mt-1 truncate text-sm font-semibold text-slate-500">{producto.descripcion || 'Sin descripcion registrada.'}</p>
+      <p className="mt-2 text-xs font-black uppercase tracking-wide text-slate-400">
+        {producto.ingredientes.length} insumos | {producto.cantidadProducida} {producto.unidadMedida || 'u'} | {producto.estado || 'Activo'}
+      </p>
+    </div>
+    <div className="flex items-center justify-between gap-4 md:justify-end">
+      <div className="flex gap-2">
+        <button type="button" onClick={onEdit} className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-500 transition hover:bg-blue-50 hover:text-blue-600">
+          <Edit size={17} />
+        </button>
+        <button type="button" onClick={onDelete} className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-500 transition hover:bg-rose-50 hover:text-rose-600">
+          <Trash2 size={17} />
+        </button>
+      </div>
+    </div>
+  </article>
+);
+
+const MiniStat = ({ label, value }: { label: string; value: string }) => (
+  <div className="rounded-xl bg-slate-50 px-3 py-2 text-center">
+    <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">{label}</p>
+    <p className="mt-1 truncate text-sm font-black text-slate-900">{value}</p>
+  </div>
+);
+
+const LoadingState = ({ label }: { label: string }) => (
+  <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-slate-200 bg-white py-24">
+    <RefreshCw className="animate-spin text-blue-500" size={32} />
+    <p className="text-sm font-semibold text-slate-400">{label}</p>
+  </div>
+);
+
+const EmptyState = ({ title, subtitle, actionLabel, onAction }: { title: string; subtitle: string; actionLabel: string; onAction: () => void }) => (
+  <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-16 text-center">
+    <Wrench className="mx-auto text-slate-200" size={40} />
+    <h3 className="mt-4 text-lg font-black text-slate-900">{title}</h3>
+    <p className="mt-1 text-sm font-semibold text-slate-400">{subtitle}</p>
+    <button type="button" onClick={onAction} className="mt-6 rounded-xl bg-slate-900 px-5 py-3 text-xs font-black text-white transition hover:bg-blue-600">
+      {actionLabel}
+    </button>
+  </div>
+);
 
 export default ProduccionPage;

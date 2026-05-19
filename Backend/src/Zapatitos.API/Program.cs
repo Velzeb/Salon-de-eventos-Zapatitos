@@ -21,6 +21,7 @@ JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 // Configuración de capas
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
+builder.Services.AddHttpContextAccessor();
 
 // Configuración de Seguridad
 builder.Services.AddAuthentication(options => {
@@ -123,6 +124,7 @@ if (app.Environment.IsDevelopment())
 // app.UseHttpsRedirection();
 
 app.UseCors("AllowVite");
+app.UseStaticFiles();
 
 app.UseAuthentication();
 app.UseAuthorization();

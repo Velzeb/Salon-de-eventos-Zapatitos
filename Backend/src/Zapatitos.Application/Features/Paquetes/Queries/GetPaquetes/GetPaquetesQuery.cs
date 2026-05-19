@@ -39,6 +39,7 @@ public class GetPaquetesQueryHandler : IRequestHandler<GetPaquetesQuery, Result<
             PrecioBase = p.PrecioBase,
             CapacidadNinos = p.CapacidadNinos,
             DuracionHoras = p.DuracionHoras,
+            ImagenUrl = p.ImagenUrl,
             Articulos = p.Articulos.Select(pa => new PaqueteArticuloDto
             {
                 ArticuloId = pa.ArticuloId,

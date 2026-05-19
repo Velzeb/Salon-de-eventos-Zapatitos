@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Plus, ArrowRight, X, Clock, CalendarDays, Globe } from 'lucide-react';
 import type { Evento } from '../../../services/eventosService';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getEstadoEventoBadgeClasses, normalizeEstadoEvento } from '../../../utils/estadoEvento';
 
 interface CalendarViewProps {
   eventos: Evento[];
@@ -70,7 +71,8 @@ const CalendarView = ({ eventos, onDateSelect }: CalendarViewProps) => {
             </span>
             <div className="flex flex-col gap-1.5 overflow-hidden">
               {dayEvents.slice(0, 3).map(e => {
-                const isNewOnline = e.origen.toLowerCase() === 'online' && e.estado.toLowerCase() === 'provisional';
+                const estadoKey = normalizeEstadoEvento(e.estado);
+                const isNewOnline = e.origen.toLowerCase() === 'online' && estadoKey === 'provisional';
                 
                 return (
                   <div 
@@ -79,11 +81,7 @@ const CalendarView = ({ eventos, onDateSelect }: CalendarViewProps) => {
                       ev.stopPropagation();
                       navigate(`/admin/operativo/${e.id}`);
                     }}
-                    className={`px-2 py-1 rounded text-[10px] font-bold truncate transition-all active:scale-95 flex items-center justify-between group/event relative ${
-                      e.estado.toLowerCase() === 'confirmado' ? 'bg-emerald-100 text-emerald-700' : 
-                      e.estado.toLowerCase() === 'provisional' ? 'bg-amber-100 text-amber-700' : 
-                      'bg-indigo-100 text-indigo-700'
-                    } ${isNewOnline ? 'ring-2 ring-blue-500 ring-offset-1' : ''}`}
+                    className={`px-2 py-1 rounded text-xs font-bold truncate transition-all active:scale-95 flex items-center justify-between group/event relative border ${getEstadoEventoBadgeClasses(estadoKey)} ${isNewOnline ? 'ring-2 ring-blue-500 ring-offset-1' : ''}`}
                     title={`${e.cumpleaneros.join(', ')} - ${e.estado} (${e.origen})`}
                   >
                     <span className="truncate">{e.cumpleaneros.join(', ')}</span>
@@ -97,7 +95,7 @@ const CalendarView = ({ eventos, onDateSelect }: CalendarViewProps) => {
                 );
               })}
               {dayEvents.length > 3 && (
-                <div className="text-[10px] font-bold text-slate-400 mt-1">
+                <div className="text-xs font-bold text-slate-400 mt-1">
                   + {dayEvents.length - 3} más
                 </div>
               )}
@@ -146,9 +144,13 @@ const CalendarView = ({ eventos, onDateSelect }: CalendarViewProps) => {
       <div className="p-6 bg-slate-50 flex flex-wrap items-center gap-6">
         <div className="text-xs font-bold text-slate-500 uppercase mr-2">Estatus:</div>
         {[
-          { color: 'bg-emerald-500', label: 'Confirmado' },
           { color: 'bg-amber-500', label: 'Provisional' },
-          { color: 'bg-indigo-500', label: 'Completado' }
+          { color: 'bg-blue-500', label: 'Reservado / Planificación' },
+          { color: 'bg-indigo-500', label: 'Planificado' },
+          { color: 'bg-emerald-500', label: 'En curso / Liquidado' },
+          { color: 'bg-purple-500', label: 'Finalizada / Post-fiesta' },
+          { color: 'bg-slate-500', label: 'Terminada' },
+          { color: 'bg-rose-500', label: 'Cancelado' }
         ].map(l => (
           <div key={l.label} className="flex items-center gap-2">
             <div className={`w-3 h-3 rounded-full ${l.color}`} />
@@ -160,7 +162,7 @@ const CalendarView = ({ eventos, onDateSelect }: CalendarViewProps) => {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
           </div>
-          <span className="text-xs font-black text-blue-600 uppercase tracking-widest italic">Reserva Online Nueva</span>
+          <span className="text-xs font-bold text-blue-600 ">Reserva Online Nueva</span>
         </div>
       </div>
 
@@ -178,15 +180,15 @@ const CalendarView = ({ eventos, onDateSelect }: CalendarViewProps) => {
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl border border-slate-200 overflow-hidden"
+              className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden"
             >
               <div className="bg-slate-900 p-8 text-white flex justify-between items-center relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl -mr-16 -mt-16" />
                 <div className="relative z-10 space-y-1">
-                  <h3 className="text-2xl font-black italic tracking-tight">
+                  <h3 className="text-2xl font-bold italic tracking-tight">
                     {selectedDay.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </h3>
-                  <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest">Resumen de Agenda Diaria</p>
+                  <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">Resumen de Agenda Diaria</p>
                 </div>
                 <button 
                   onClick={() => setShowDayModal(false)}
@@ -206,21 +208,17 @@ const CalendarView = ({ eventos, onDateSelect }: CalendarViewProps) => {
                         className="p-5 bg-slate-50 hover:bg-slate-100 rounded-3xl border border-slate-100 transition-all cursor-pointer group flex items-center justify-between"
                       >
                         <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
-                            e.estado.toLowerCase() === 'confirmado' ? 'bg-emerald-100 text-emerald-600' : 
-                            e.estado.toLowerCase() === 'provisional' ? 'bg-amber-100 text-amber-600' : 
-                            'bg-indigo-100 text-indigo-600'
-                          }`}>
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center border ${getEstadoEventoBadgeClasses(normalizeEstadoEvento(e.estado))}`}>
                             <Clock size={20} />
                           </div>
                           <div>
-                            <p className="font-black text-slate-800 leading-tight truncate max-w-[200px]">{e.cumpleaneros.join(', ')}</p>
+                            <p className="font-bold text-slate-800 leading-tight truncate max-w-[200px]">{e.cumpleaneros.join(', ')}</p>
                             <div className="flex items-center gap-2 mt-1">
-                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                              <span className="text-xs font-bold text-slate-400 ">
                                 {e.horaInicio.substring(0,5)} - {e.horaFin.substring(0,5)}
                               </span>
                               {e.origen.toLowerCase() === 'online' && (
-                                <span className="flex items-center gap-1 text-[8px] font-black text-blue-500 uppercase tracking-widest bg-blue-50 px-1.5 py-0.5 rounded">
+                                <span className="flex items-center gap-1 text-xs font-bold text-blue-500  bg-blue-50 px-1.5 py-0.5 rounded">
                                   <Globe size={8} /> Online
                                 </span>
                               )}
@@ -247,7 +245,7 @@ const CalendarView = ({ eventos, onDateSelect }: CalendarViewProps) => {
                     setShowDayModal(false);
                     onDateSelect(selectedDay);
                   }}
-                  className="w-full py-5 bg-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl shadow-primary/30 hover:bg-secondary hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+                  className="w-full py-5 bg-primary text-white rounded-2xl font-bold text-xs  shadow-2xl shadow-primary/30 hover:bg-secondary hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3"
                 >
                   <Plus size={20} strokeWidth={3} /> Crear Nueva Reserva
                 </button>
@@ -261,3 +259,7 @@ const CalendarView = ({ eventos, onDateSelect }: CalendarViewProps) => {
 };
 
 export default CalendarView;
+
+
+
+

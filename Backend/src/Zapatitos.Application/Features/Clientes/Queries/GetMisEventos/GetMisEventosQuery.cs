@@ -38,7 +38,7 @@ public class GetMisEventosQueryHandler : IRequestHandler<GetMisEventosQuery, Res
             e.Id,
             e.FechaEvento.ToString("yyyy-MM-dd"),
             e.Estado.ToString(),
-            e.Paquete?.Nombre ?? "Paquete",
+            e.Paquete?.Nombre ?? "Solo salón",
             e.PrecioTotal,
             e.SaldoPendiente,
             string.Join(", ", e.Cumpleaneros.Select(c => c.Nino?.Nombre ?? "Cumpleañero"))

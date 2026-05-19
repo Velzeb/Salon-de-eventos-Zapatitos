@@ -28,19 +28,19 @@ public class AddPagoNominaCommandHandler : IRequestHandler<AddPagoNominaCommand,
 
         var asignaciones = await _unitOfWork.Repository<AsignacionStaff>().Query()
             .Include(a => a.Evento)
-            .Where(a => a.EmpleadoId == request.EmpleadoId && !a.EsPagado && a.Evento.Estado == Zapatitos.Domain.Enums.EstadoEvento.Completado)
+            .Where(a => a.EmpleadoId == request.EmpleadoId && !a.EsPagado && a.Evento.Estado == Zapatitos.Domain.Enums.EstadoEvento.Terminado)
             .ToListAsync(cancellationToken);
 
         if (!asignaciones.Any()) return Result<long>.Failure("No hay eventos pendientes de pago para este empleado.");
 
-        decimal totalAPagar = asignaciones.Count * empleado.PagoPorEvento;
+        decimal totalAPagar = asignaciones.Count() * empleado.PagoPorEvento;
 
         var pago = new PagoNomina
         {
             EmpleadoId = request.EmpleadoId,
             Monto = totalAPagar,
             FechaPago = DateTime.UtcNow,
-            Periodo = $"Pago de {asignaciones.Count} eventos hasta {DateTime.UtcNow:dd/MM/yyyy}"
+            Periodo = $"Pago de {asignaciones.Count()} eventos hasta {DateTime.UtcNow:dd/MM/yyyy}"
         };
 
         await _unitOfWork.Repository<PagoNomina>().AddAsync(pago);
@@ -59,7 +59,7 @@ public class AddPagoNominaCommandHandler : IRequestHandler<AddPagoNominaCommand,
         {
             Tipo = TipoTransaccion.Egreso,
             Monto = totalAPagar,
-            Concepto = $"Pago Nómina - {empleado.NombreCompleto} ({asignaciones.Count} eventos)",
+            Concepto = $"Pago Nómina - {empleado.NombreCompleto} ({asignaciones.Count()} eventos)",
             Fecha = DateTime.UtcNow,
             ReferenciaId = pago.Id
         };

@@ -16,6 +16,7 @@ public record UpdateArticuloCommand : IRequest<Result<Unit>>
     public string? UnidadMedida { get; init; }
     public decimal PrecioCosto { get; init; }
     public long? ProveedorId { get; init; }
+    public string? ImagenUrl { get; init; }
 }
 
 public class UpdateArticuloCommandHandler : IRequestHandler<UpdateArticuloCommand, Result<Unit>>
@@ -44,6 +45,7 @@ public class UpdateArticuloCommandHandler : IRequestHandler<UpdateArticuloComman
         entity.UnidadMedida = request.UnidadMedida;
         entity.PrecioCosto = request.PrecioCosto;
         entity.ProveedorId = request.ProveedorId;
+        entity.ImagenUrl = request.ImagenUrl;
 
         repository.Update(entity);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -44,7 +44,7 @@ public class GetCalculoNominaQueryHandler : IRequestHandler<GetCalculoNominaQuer
         var asignaciones = await _unitOfWork.Repository<AsignacionStaff>().Query()
             .Include(a => a.Evento)
                 .ThenInclude(e => e.Paquete)
-            .Where(a => !a.EsPagado && a.Evento.Estado == Zapatitos.Domain.Enums.EstadoEvento.Completado)
+            .Where(a => !a.EsPagado && a.Evento.Estado == Zapatitos.Domain.Enums.EstadoEvento.Terminado)
             .ToListAsync(cancellationToken);
 
         var result = new List<NominaEmpleadoDto>();
@@ -59,12 +59,12 @@ public class GetCalculoNominaQueryHandler : IRequestHandler<GetCalculoNominaQuer
                 EmpleadoId = emp.Id,
                 NombreEmpleado = emp.NombreCompleto,
                 PagoPorEvento = emp.PagoPorEvento,
-                EventosPendientes = misAsignaciones.Count,
-                TotalAPagar = misAsignaciones.Count * emp.PagoPorEvento,
+                EventosPendientes = misAsignaciones.Count(),
+                TotalAPagar = misAsignaciones.Count() * emp.PagoPorEvento,
                 Detalles = misAsignaciones.Select(a => new EventoPendientePagoDto {
                     EventoId = a.EventoId,
                     Fecha = a.Evento.FechaEvento.ToShortDateString(),
-                    Paquete = a.Evento.Paquete.Nombre
+                    Paquete = a.Evento.Paquete != null ? a.Evento.Paquete.Nombre : "Solo salón"
                 }).ToList()
             });
         }

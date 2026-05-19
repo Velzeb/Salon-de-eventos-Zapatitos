@@ -21,8 +21,10 @@ const LoginPage = () => {
       await authService.login(email, password);
       const roles = authService.getRoles();
       
-      if (roles.includes('Administrador') || roles.includes('Empleado')) {
+      if (roles.includes('Administrador')) {
         navigate('/admin/dashboard');
+      } else if (roles.includes('Empleado')) {
+        navigate('/empleado/jornada');
       } else if (roles.includes('Cliente')) {
         navigate('/cliente/dashboard');
       } else {

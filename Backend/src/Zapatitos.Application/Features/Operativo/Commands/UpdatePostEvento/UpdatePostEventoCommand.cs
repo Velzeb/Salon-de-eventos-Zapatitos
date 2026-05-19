@@ -44,7 +44,7 @@ public class UpdatePostEventoCommandHandler : IRequestHandler<UpdatePostEventoCo
 
         if (request.CerrarDefinitivamente)
         {
-            evento.Estado = EstadoEvento.Completado;
+            evento.Estado = EstadoEvento.Terminado;
         }
 
         _unitOfWork.Repository<Evento>().Update(evento);

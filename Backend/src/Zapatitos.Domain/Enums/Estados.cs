@@ -5,8 +5,8 @@ public enum EstadoEvento
     Provisional,
     Confirmado,
     EnCurso,
-    PostFiesta,
-    Completado,
+    Finalizado,
+    Terminado,
     Cancelado
 }
 
@@ -30,6 +30,13 @@ public enum EstadoTarea
     Pendiente,
     EnProgreso,
     Completada
+}
+
+public enum TipoTareaOperativa
+{
+    Manual,
+    Inventario,
+    Servicio
 }
 
 public enum TipoProveedor

@@ -19,6 +19,9 @@ public record CreateServicioCommand : IRequest<Result<long>>
     public long? ArticuloInventarioId { get; init; }
     public long? ProductoProduccionId { get; init; }
     public long? ProveedorId { get; init; }
+    public bool RequiereTemporizador { get; init; }
+    public int DuracionMinutos { get; init; }
+    public string? ImagenUrl { get; init; }
 }
 
 public class CreateServicioCommandHandler : IRequestHandler<CreateServicioCommand, Result<long>>
@@ -43,7 +46,10 @@ public class CreateServicioCommandHandler : IRequestHandler<CreateServicioComman
             CantidadMinima = request.CantidadMinima,
             ArticuloInventarioId = request.ArticuloInventarioId,
             ProductoProduccionId = request.ProductoProduccionId,
-            ProveedorId = request.ProveedorId
+            ProveedorId = request.ProveedorId,
+            RequiereTemporizador = request.RequiereTemporizador,
+            DuracionMinutos = request.DuracionMinutos,
+            ImagenUrl = request.ImagenUrl
         };
 
         var repository = _unitOfWork.Repository<Servicio>();

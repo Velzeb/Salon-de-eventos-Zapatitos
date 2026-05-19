@@ -5,12 +5,14 @@ export interface Cliente {
   nombreCompleto: string;
   telefono: string;
   direccion: string;
+  fotoPerfilUrl?: string;
 }
 
 export interface CreateClienteCommand {
   nombreCompleto: string;
   telefono: string;
   direccion: string;
+  fotoPerfilUrl?: string;
 }
 
 export const clientesService = {

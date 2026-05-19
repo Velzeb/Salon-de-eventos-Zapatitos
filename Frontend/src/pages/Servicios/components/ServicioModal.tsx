@@ -18,6 +18,7 @@ import { produccionService, type ProductoProduccion } from '../../../services/pr
 import { proveedoresService, type Proveedor } from '../../../services/proveedoresService';
 import type { CreateServicioCommand, Servicio } from '../../../services/paquetesService';
 import { toast } from 'sonner';
+import ImageUpload from '../../../components/common/ImageUpload';
 
 interface ServicioModalProps {
   isOpen: boolean;
@@ -42,7 +43,10 @@ const ServicioModal = ({ isOpen, onClose, onSuccess, servicio }: ServicioModalPr
     cantidadMinima: 1,
     articuloInventarioId: undefined,
     productoProduccionId: undefined,
-    proveedorId: undefined
+    proveedorId: undefined,
+    requiereTemporizador: false,
+    duracionMinutos: 0,
+    imagenUrl: ''
   });
 
   useEffect(() => {
@@ -63,7 +67,10 @@ const ServicioModal = ({ isOpen, onClose, onSuccess, servicio }: ServicioModalPr
         cantidadMinima: servicio.cantidadMinima,
         articuloInventarioId: servicio.articuloInventarioId,
         productoProduccionId: servicio.productoProduccionId,
-        proveedorId: servicio.proveedorId
+        proveedorId: servicio.proveedorId,
+        requiereTemporizador: servicio.requiereTemporizador,
+        duracionMinutos: servicio.duracionMinutos,
+        imagenUrl: servicio.imagenUrl || ''
       });
     } else {
       setFormData({
@@ -76,7 +83,10 @@ const ServicioModal = ({ isOpen, onClose, onSuccess, servicio }: ServicioModalPr
         cantidadMinima: 1,
         articuloInventarioId: undefined,
         productoProduccionId: undefined,
-        proveedorId: undefined
+        proveedorId: undefined,
+        requiereTemporizador: false,
+        duracionMinutos: 0,
+        imagenUrl: ''
       });
     }
   }, [servicio, isOpen]);
@@ -271,6 +281,48 @@ const ServicioModal = ({ isOpen, onClose, onSuccess, servicio }: ServicioModalPr
             </div>
           </div>
 
+          {/* STEP 1.5: CONTROLES DE TIEMPO (Cronograma) */}
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-500 flex items-center justify-center">
+                <Zap size={16} />
+              </div>
+              <h3 className="text-sm font-bold text-bg-dark uppercase tracking-widest">Cronometría</h3>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+               <div className="space-y-1.5 flex flex-col justify-center">
+                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                   ¿Requiere Cronómetro?
+                 </label>
+                 <div className="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-2xl p-4">
+                    <button type="button" onClick={() => setFormData({...formData, requiereTemporizador: !formData.requiereTemporizador})} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formData.requiereTemporizador ? 'bg-blue-600' : 'bg-slate-300'}`}>
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.requiereTemporizador ? 'translate-x-6' : 'translate-x-1'}`} />
+                    </button>
+                    <span className="text-xs font-bold text-slate-600">{formData.requiereTemporizador ? 'Sí, para el operativo' : 'No es necesario'}</span>
+                 </div>
+               </div>
+
+               {formData.requiereTemporizador && (
+                 <div className="space-y-1.5">
+                   <label className="text-[10px] font-bold text-blue-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                     Duración (Minutos)
+                   </label>
+                   <div className="relative">
+                     <Hash className="absolute left-5 top-1/2 -translate-y-1/2 text-blue-300" size={16} />
+                     <input 
+                       type="number"
+                       min="1"
+                       className="w-full bg-blue-50/30 border border-blue-100 rounded-2xl pl-12 pr-5 py-4 text-sm font-bold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-300 outline-none transition-all text-bg-dark"
+                       value={formData.duracionMinutos}
+                       onChange={e => setFormData({...formData, duracionMinutos: parseInt(e.target.value) || 0})}
+                     />
+                   </div>
+                 </div>
+               )}
+            </div>
+          </div>
+
           {/* STEP 2: FINANCIERO Y LOGÍSTICA */}
           <div className="space-y-6">
             <div className="flex items-center gap-3">
@@ -370,6 +422,67 @@ const ServicioModal = ({ isOpen, onClose, onSuccess, servicio }: ServicioModalPr
                   onChange={e => setFormData({...formData, descripcion: e.target.value})}
                 />
               </div>
+            </div>
+
+            <div className="pt-2">
+              {formData.tipo === 0 ? (() => {
+                const selArt = articulos.find(a => a.id === formData.articuloInventarioId);
+                const inheritedImg = selArt?.imagenUrl;
+                return (
+                  <div className="bg-slate-50 border border-slate-100 rounded-3xl p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Imagen Heredada del Inventario</span>
+                      <span className="px-3 py-1 bg-blue-50 text-blue-500 rounded-full text-[9px] font-bold uppercase tracking-widest border border-blue-100">Enlace Directo</span>
+                    </div>
+                    {inheritedImg ? (
+                      <div className="relative aspect-video rounded-2xl overflow-hidden border border-slate-100 bg-white">
+                        {inheritedImg.match(/\.(mp4|webm|ogg|mov)$/i) || inheritedImg.includes('/videos/') ? (
+                          <video src={inheritedImg} className="w-full h-full object-cover" autoPlay loop muted playsInline />
+                        ) : (
+                          <img src={inheritedImg} alt={selArt?.nombre} className="w-full h-full object-cover" />
+                        )}
+                      </div>
+                    ) : (
+                      <div className="py-12 bg-white rounded-2xl border border-slate-100 flex flex-col items-center justify-center gap-2 text-slate-300">
+                        <Package size={32} className="opacity-10" />
+                        <span className="text-[9px] font-black uppercase tracking-widest">El artículo seleccionado no tiene imagen</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })() : formData.tipo === 1 ? (() => {
+                const selRec = recetas.find(r => r.id === formData.productoProduccionId);
+                const inheritedImg = selRec?.imagenUrl;
+                return (
+                  <div className="bg-slate-50 border border-slate-100 rounded-3xl p-6 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Imagen Heredada de Producción</span>
+                      <span className="px-3 py-1 bg-amber-50 text-amber-500 rounded-full text-[9px] font-bold uppercase tracking-widest border border-amber-100">Enlace Directo</span>
+                    </div>
+                    {inheritedImg ? (
+                      <div className="relative aspect-video rounded-2xl overflow-hidden border border-slate-100 bg-white">
+                        {inheritedImg.match(/\.(mp4|webm|ogg|mov)$/i) || inheritedImg.includes('/videos/') ? (
+                          <video src={inheritedImg} className="w-full h-full object-cover" autoPlay loop muted playsInline />
+                        ) : (
+                          <img src={inheritedImg} alt={selRec?.nombre} className="w-full h-full object-cover" />
+                        )}
+                      </div>
+                    ) : (
+                      <div className="py-12 bg-white rounded-2xl border border-slate-100 flex flex-col items-center justify-center gap-2 text-slate-300">
+                        <Wrench size={32} className="opacity-10" />
+                        <span className="text-[9px] font-black uppercase tracking-widest">El producto de producción no tiene imagen</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })() : (
+                <ImageUpload
+                  value={formData.imagenUrl}
+                  onChange={(url) => setFormData({ ...formData, imagenUrl: url })}
+                  folder="servicios"
+                  label="Imagen o Video de Referencia del Servicio"
+                />
+              )}
             </div>
           </div>
         </form>

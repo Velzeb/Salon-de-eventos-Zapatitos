@@ -10,6 +10,7 @@ public class PaqueteDto
     public decimal PrecioBase { get; set; }
     public int CapacidadNinos { get; set; }
     public int DuracionHoras { get; set; }
+    public string? ImagenUrl { get; set; }
     
     public List<PaqueteArticuloDto> Articulos { get; set; } = new();
     public List<PaqueteServicioDto> Servicios { get; set; } = new();

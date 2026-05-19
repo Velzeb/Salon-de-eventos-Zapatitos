@@ -19,4 +19,11 @@ public interface IStorageService
     /// </summary>
     /// <param name="fileName">Nombre del archivo a eliminar.</param>
     Task DeleteFileAsync(string fileName);
+
+    /// <summary>
+    /// Obtiene un archivo del almacenamiento.
+    /// </summary>
+    /// <param name="fileName">Nombre del archivo a obtener.</param>
+    /// <returns>El flujo de datos del archivo y su tipo MIME.</returns>
+    Task<(Stream Stream, string ContentType)> GetFileAsync(string fileName);
 }

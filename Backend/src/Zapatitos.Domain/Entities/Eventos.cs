@@ -7,8 +7,8 @@ namespace Zapatitos.Domain.Entities;
 
 public class Evento : BaseEntity
 {
-    public long PaqueteId { get; set; }
-    public virtual Paquete Paquete { get; set; } = null!;
+    public long? PaqueteId { get; set; }
+    public virtual Paquete? Paquete { get; set; }
     
     public virtual ICollection<Cumpleanero> Cumpleaneros { get; set; } = new List<Cumpleanero>();
     public virtual ICollection<Cliente> ClientesResponsables { get; set; } = new List<Cliente>();
@@ -26,10 +26,7 @@ public class Evento : BaseEntity
 
     // === BRIEFING DE TEMÁTICA (Fase 5) ===
     public string? Tematica { get; set; }
-    public string? ColorManteleria { get; set; }
-    public string? SaborPastel { get; set; }
     public string? NotasDecoracion { get; set; }
-    public string? Alergias { get; set; }
     
     public virtual ICollection<Pago> Pagos { get; set; } = new List<Pago>();
     public virtual ICollection<AsignacionStaff> Staff { get; set; } = new List<AsignacionStaff>();

@@ -24,6 +24,7 @@ public record UpdateProductoProduccionCommand : IRequest<Result<Unit>>
     public string? Descripcion { get; init; }
     public int CantidadProducida { get; init; } = 1;
     public string? UnidadMedida { get; init; }
+    public string? ImagenUrl { get; init; }
     public List<IngredienteUpdateCommand> Ingredientes { get; init; } = new();
 }
 
@@ -50,6 +51,7 @@ public class UpdateProductoProduccionCommandHandler : IRequestHandler<UpdateProd
         producto.Descripcion = request.Descripcion;
         producto.CantidadProducida = request.CantidadProducida;
         producto.UnidadMedida = request.UnidadMedida;
+        producto.ImagenUrl = request.ImagenUrl;
 
         // Replace all ingredients
         var ingredientesRepo = _unitOfWork.Repository<RecetaIngrediente>();

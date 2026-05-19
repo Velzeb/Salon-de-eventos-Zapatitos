@@ -21,6 +21,9 @@ public record UpdateServicioCommand : IRequest<Result<Unit>>
     public long? ArticuloInventarioId { get; init; }
     public long? ProductoProduccionId { get; init; }
     public long? ProveedorId { get; init; }
+    public bool RequiereTemporizador { get; init; }
+    public int DuracionMinutos { get; init; }
+    public string? ImagenUrl { get; init; }
 }
 
 public class UpdateServicioCommandHandler : IRequestHandler<UpdateServicioCommand, Result<Unit>>
@@ -51,6 +54,9 @@ public class UpdateServicioCommandHandler : IRequestHandler<UpdateServicioComman
         entity.ArticuloInventarioId = request.ArticuloInventarioId;
         entity.ProductoProduccionId = request.ProductoProduccionId;
         entity.ProveedorId = request.ProveedorId;
+        entity.RequiereTemporizador = request.RequiereTemporizador;
+        entity.DuracionMinutos = request.DuracionMinutos;
+        entity.ImagenUrl = request.ImagenUrl;
 
         repository.Update(entity);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

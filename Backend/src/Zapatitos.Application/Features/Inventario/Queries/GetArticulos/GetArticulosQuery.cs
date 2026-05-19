@@ -18,7 +18,8 @@ public record ArticuloDto(
     string? UnidadMedida, 
     decimal PrecioCosto,
     string? ProveedorNombre,
-    long? ProveedorId
+    long? ProveedorId,
+    string? ImagenUrl
 );
 
 public record GetArticulosQuery : IRequest<List<ArticuloDto>>;
@@ -47,7 +48,8 @@ public class GetArticulosQueryHandler : IRequestHandler<GetArticulosQuery, List<
                 a.UnidadMedida,
                 a.PrecioCosto,
                 a.Proveedor != null ? a.Proveedor.Nombre : null,
-                a.ProveedorId
+                a.ProveedorId,
+                a.ImagenUrl
             ))
             .ToListAsync(cancellationToken);
 

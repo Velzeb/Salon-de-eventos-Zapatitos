@@ -12,8 +12,7 @@ public class ConfigController : ApiControllerBase
     public async Task<ActionResult<string>> Get(string clave)
     {
         var result = await Mediator.Send(new GetConfigQuery(clave));
-        if (!result.Succeeded) return NotFound(result.Errors);
-        return Ok(new { Valor = result.Value });
+        return Ok(new { Valor = result.Succeeded ? result.Value : string.Empty });
     }
 
     [HttpPost("bulk")]

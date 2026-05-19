@@ -25,6 +25,7 @@ public record ProductoProduccionDto(
     int CantidadProducida,
     string? UnidadMedida,
     string Estado,
+    string? ImagenUrl,
     List<IngredienteDto> Ingredientes
 );
 
@@ -45,6 +46,7 @@ public class GetProductosProduccionQueryHandler : IRequestHandler<GetProductosPr
             .Query()
             .Include(p => p.Ingredientes)
                 .ThenInclude(i => i.Articulo)
+            .Include(p => p.Servicios)
             .OrderBy(p => p.Nombre)
             .ToListAsync(cancellationToken);
 
@@ -55,6 +57,7 @@ public class GetProductosProduccionQueryHandler : IRequestHandler<GetProductosPr
             p.CantidadProducida,
             p.UnidadMedida,
             p.Estado.ToString(),
+            p.ImagenUrl,
             p.Ingredientes.Select(i => new IngredienteDto(
                 i.Id,
                 i.ArticuloInventarioId,

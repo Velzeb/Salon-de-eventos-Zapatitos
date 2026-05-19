@@ -7,7 +7,10 @@ export interface TareaOperativa {
   estado: string;
   asignadoA?: string;
   articuloId?: number;
+  eventoItemId?: number;
+  tipoTarea: 'Servicio' | 'Inventario' | 'Manual' | string;
   cantidadRequerida: number;
+  stockActual: number;
   stockDescontado: boolean;
 }
 
@@ -25,6 +28,7 @@ export interface StaffOperativo {
   nombre: string;
   rol: string;
   esPagado: boolean;
+  fotoPerfilUrl?: string;
 }
 
 export interface ItemOperativo {
@@ -33,6 +37,9 @@ export interface ItemOperativo {
   cantidad: number;
   esIncluidoEnPaquete: boolean;
   tipo: string;
+  requiereTemporizador: boolean;
+  duracionMinutos: number;
+  imagenUrl?: string;
 }
 
 export interface EventoOperativo {
@@ -56,10 +63,7 @@ export interface EventoOperativo {
 
   // === FASE 5 ===
   tematica?: string;
-  colorManteleria?: string;
-  saborPastel?: string;
   notasDecoracion?: string;
-  alergias?: string;
   cronograma: ActividadCronogramaDto[];
   invitados: InvitadoDto[];
 
@@ -119,15 +123,28 @@ export interface AddConsumoCommand {
 export interface UpdateBriefingCommand {
   eventoId: number;
   tematica?: string;
-  colorManteleria?: string;
-  saborPastel?: string;
   notasDecoracion?: string;
-  alergias?: string;
 }
 
 export interface UpdateCronogramaCommand {
   eventoId: number;
   actividades: Partial<ActividadCronogramaDto>[];
+}
+
+export interface CreateTareaCommand {
+  eventoId: number;
+  nombreTarea: string;
+  descripcion?: string;
+  articuloInventarioId?: number;
+  cantidadRequerida: number;
+}
+
+export interface UpdateTareaCommand {
+  tareaId: number;
+  nombreTarea: string;
+  descripcion?: string;
+  articuloInventarioId?: number;
+  cantidadRequerida: number;
 }
 
 export const operativoService = {
@@ -138,6 +155,24 @@ export const operativoService = {
 
   completeTarea: async (id: number): Promise<void> => {
     await apiClient.patch(`/operativo/tareas/${id}/completar`);
+  },
+
+  createTarea: async (command: CreateTareaCommand): Promise<number> => {
+    const response = await apiClient.post<number>('/operativo/tareas', command);
+    return response.data;
+  },
+
+  updateTarea: async (command: UpdateTareaCommand): Promise<void> => {
+    await apiClient.put(`/operativo/tareas/${command.tareaId}`, {
+      nombreTarea: command.nombreTarea,
+      descripcion: command.descripcion,
+      articuloInventarioId: command.articuloInventarioId,
+      cantidadRequerida: command.cantidadRequerida
+    });
+  },
+
+  deleteTarea: async (tareaId: number): Promise<void> => {
+    await apiClient.delete(`/operativo/tareas/${tareaId}`);
   },
 
   addConsumo: async (command: AddConsumoCommand): Promise<number> => {

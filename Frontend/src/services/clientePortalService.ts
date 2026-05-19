@@ -53,7 +53,7 @@ export interface EventoClienteDetail {
   colorManteleria?: string;
   saborPastel?: string;
   notasDecoracion?: string;
-  alergias?: string;
+  alergiasCumpleaneros: string[];
   items: EventoItemCliente[];
   fotosUrls: string[];
   galeriaMultimedia: MultimediaEvento[];
@@ -72,6 +72,7 @@ export interface PerfilCliente {
   telefono?: string;
   direccion?: string;
   email: string;
+  fotoPerfilUrl?: string;
   ninos: NinoPerfil[];
 }
 
@@ -112,7 +113,7 @@ export const clientePortalService = {
     return response.data;
   },
 
-  updatePerfil: async (data: { nombreCompleto: string; telefono?: string; direccion?: string }): Promise<void> => {
+  updatePerfil: async (data: { nombreCompleto: string; telefono?: string; direccion?: string; fotoPerfilUrl?: string }): Promise<void> => {
     await apiClient.put('/clientes/perfil', data);
   }
 };

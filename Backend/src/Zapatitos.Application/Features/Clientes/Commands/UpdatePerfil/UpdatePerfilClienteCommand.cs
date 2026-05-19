@@ -14,6 +14,7 @@ public record UpdatePerfilClienteCommand : IRequest<Result<bool>>
     public string NombreCompleto { get; init; } = null!;
     public string? Telefono { get; init; }
     public string? Direccion { get; init; }
+    public string? FotoPerfilUrl { get; init; }
 }
 
 public class UpdatePerfilClienteCommandHandler : IRequestHandler<UpdatePerfilClienteCommand, Result<bool>>
@@ -31,6 +32,7 @@ public class UpdatePerfilClienteCommandHandler : IRequestHandler<UpdatePerfilCli
         cliente.NombreCompleto = request.NombreCompleto;
         cliente.Telefono = request.Telefono;
         cliente.Direccion = request.Direccion;
+        cliente.FotoPerfilUrl = request.FotoPerfilUrl;
 
         _unitOfWork.Repository<Cliente>().Update(cliente);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

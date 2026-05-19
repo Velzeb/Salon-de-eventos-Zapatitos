@@ -16,6 +16,7 @@ public record RegisterStaffCommand : IRequest<Result<long>>
     public string NombreCompleto { get; init; } = null!;
     public string Rol { get; init; } = null!; // "Administrador" o "Empleado"
     public string? Puesto { get; init; }
+    public string? FotoPerfilUrl { get; init; }
 }
 
 public class RegisterStaffCommandHandler : IRequestHandler<RegisterStaffCommand, Result<long>>
@@ -55,6 +56,7 @@ public class RegisterStaffCommandHandler : IRequestHandler<RegisterStaffCommand,
             Usuario = usuario,
             NombreCompleto = request.NombreCompleto,
             Puesto = request.Puesto,
+            FotoPerfilUrl = request.FotoPerfilUrl,
             FechaIngreso = System.DateTime.UtcNow
         };
 

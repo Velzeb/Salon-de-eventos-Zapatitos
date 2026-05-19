@@ -1,46 +1,87 @@
-import { useEffect, useState, useMemo } from 'react';
-import { 
-  Plus, 
-  Search, 
-  Trash2, 
-  Edit, 
-  RefreshCw,
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Boxes,
+  Edit,
+  LayoutGrid,
+  List,
   Package,
+  Plus,
+  RefreshCw,
+  Search,
+  Timer,
+  Trash2,
+  Truck,
   Users,
   Wrench,
-  Zap,
-  LayoutGrid,
-  Boxes,
-  Truck
+  Zap
 } from 'lucide-react';
-import { paquetesService, type Servicio } from '../../services/paquetesService';
+import type { LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import type { ReactNode } from 'react';
+import { paquetesService, type Servicio } from '../../services/paquetesService';
 import ServicioModal from './components/ServicioModal';
+import MediaViewerR2 from '../../components/common/MediaViewerR2';
+
+type ServiceFilter = 'all' | 'inventory' | 'production' | 'third';
+type ViewMode = 'grid' | 'list';
+
+const inputClass =
+  'w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10';
+
+const serviceTypes: Record<number, { key: ServiceFilter; label: string; icon: LucideIcon; classes: string; sourceLabel: string }> = {
+  0: { key: 'inventory', label: 'Inventario', icon: Package, classes: 'bg-blue-50 text-blue-700 border-blue-100', sourceLabel: 'Artículo' },
+  1: { key: 'production', label: 'Producción', icon: Wrench, classes: 'bg-amber-50 text-amber-700 border-amber-100', sourceLabel: 'Receta' },
+  2: { key: 'third', label: 'Tercero', icon: Users, classes: 'bg-emerald-50 text-emerald-700 border-emerald-100', sourceLabel: 'Aliado' }
+};
+
+const getTypeInfo = (tipo: number) => serviceTypes[tipo] || serviceTypes[2];
 
 const ServiciosPage = () => {
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState<ServiceFilter>('all');
+  const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedServicio, setSelectedServicio] = useState<Servicio | null>(null);
-  const [filterType, setFilterType] = useState<number | 'all'>('all');
-
-  useEffect(() => {
-    loadServicios();
-  }, []);
 
   const loadServicios = async () => {
     setLoading(true);
     try {
       const data = await paquetesService.getServicios();
       setServicios(data);
-    } catch (err) {
-      console.error('Error al cargar servicios', err);
+    } catch {
       toast.error('Error al cargar el catálogo de servicios');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    void Promise.resolve().then(loadServicios);
+  }, []);
+
+  const filteredServicios = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+    return servicios.filter(servicio => {
+      const typeInfo = getTypeInfo(servicio.tipo);
+      const source = servicio.articuloNombre || servicio.productoNombre || servicio.proveedorNombre || '';
+      const matchesSearch =
+        !query ||
+        servicio.nombre.toLowerCase().includes(query) ||
+        servicio.descripcion?.toLowerCase().includes(query) ||
+        source.toLowerCase().includes(query);
+      const matchesType = filterType === 'all' || typeInfo.key === filterType;
+      return matchesSearch && matchesType;
+    });
+  }, [servicios, searchTerm, filterType]);
+
+  const stats = useMemo(() => ({
+    total: servicios.length,
+    inventory: servicios.filter(servicio => servicio.tipo === 0).length,
+    production: servicios.filter(servicio => servicio.tipo === 1).length,
+    third: servicios.filter(servicio => servicio.tipo === 2).length
+  }), [servicios]);
 
   const handleEdit = (servicio: Servicio) => {
     setSelectedServicio(servicio);
@@ -48,267 +89,333 @@ const ServiciosPage = () => {
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este servicio?')) return;
-    
+    if (!window.confirm('¿Eliminar este servicio del catálogo?')) return;
     try {
       await paquetesService.deleteServicio(id);
-      toast.success('Servicio eliminado con éxito');
-      loadServicios();
-    } catch (err: any) {
-      console.error('Error al eliminar servicio', err);
-      const errorMsg = err.response?.data?.errors?.[0] || 'Error al eliminar el servicio';
-      toast.error(errorMsg);
-    }
-  };
-
-  const filteredServicios = useMemo(() => {
-    return servicios.filter(s => {
-      const matchesSearch = s.nombre.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesType = filterType === 'all' || s.tipo === filterType;
-      return matchesSearch && matchesType;
-    });
-  }, [servicios, searchTerm, filterType]);
-
-  const stats = useMemo(() => {
-    return {
-      total: servicios.length,
-      inventario: servicios.filter(s => s.tipo === 0).length,
-      produccion: servicios.filter(s => s.tipo === 1).length,
-      terceros: servicios.filter(s => s.tipo === 2).length,
-      avgPrice: servicios.length > 0 
-        ? servicios.reduce((acc, s) => acc + s.costoBase, 0) / servicios.length 
-        : 0
-    };
-  }, [servicios]);
-
-  const getTypeInfo = (tipo: number) => {
-    switch(tipo) {
-      case 0: return { label: 'Inventario', color: 'indigo', icon: Package, desc: 'Respaldado por stock' };
-      case 1: return { label: 'Fabricación', color: 'amber', icon: Wrench, desc: 'Producción interna' };
-      case 2: return { label: 'Tercero', color: 'emerald', icon: Users, desc: 'Proveedor externo' };
-      default: return { label: 'Otros', color: 'slate', icon: Zap, desc: 'General' };
+      toast.success('Servicio eliminado');
+      await loadServicios();
+    } catch (error: unknown) {
+      const message =
+        error &&
+        typeof error === 'object' &&
+        'response' in error &&
+        typeof error.response === 'object' &&
+        error.response &&
+        'data' in error.response &&
+        typeof error.response.data === 'object' &&
+        error.response.data &&
+        'errors' in error.response.data &&
+        Array.isArray(error.response.data.errors)
+          ? error.response.data.errors[0]
+          : 'Error al eliminar el servicio';
+      toast.error(message);
     }
   };
 
   return (
-    <div className="space-y-8 pb-12">
-      {/* HEADER SECTION */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-        <div className="flex items-center gap-6">
-          <div className="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
-            <LayoutGrid size={28} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800">
-              Catálogo de Servicios
-            </h1>
-            <p className="text-slate-500 text-sm mt-1">
-              Gestión de servicios y amenidades ofrecidas
-            </p>
-          </div>
-        </div>
+    <div className="space-y-8 pb-16">
+      <CatalogHeader
+        icon={LayoutGrid}
+        title="Servicios"
+        subtitle="Catálogo vendible: inventario, producción interna y aliados externos."
+        actionLabel="Nuevo servicio"
+        onAction={() => {
+          setSelectedServicio(null);
+          setIsModalOpen(true);
+        }}
+      />
 
-        <button 
-          onClick={() => {
-            setSelectedServicio(null);
-            setIsModalOpen(true);
-          }}
-          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors w-full md:w-auto font-medium" 
-        >
-          <Plus size={20} /> Nuevo Servicio
-        </button>
+      <div className="grid gap-4 md:grid-cols-4">
+        <MetricCard label="Total servicios" value={stats.total.toString()} icon={Zap} />
+        <MetricCard label="Inventario" value={stats.inventory.toString()} icon={Boxes} />
+        <MetricCard label="Producción" value={stats.production.toString()} icon={Wrench} />
+        <MetricCard label="Terceros" value={stats.third.toString()} icon={Truck} />
       </div>
 
-      {/* STATS OVERVIEW */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <CatalogToolbar
+        search={searchTerm}
+        onSearch={setSearchTerm}
+        placeholder="Buscar servicio, origen o proveedor"
+        onRefresh={loadServicios}
+        loading={loading}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+      >
         {[
-          { label: 'Total Servicios', value: stats.total, icon: Zap, color: 'text-indigo-600', bg: 'bg-indigo-50' },
-          { label: 'Stock / Insumos', value: stats.inventario, icon: Boxes, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { label: 'Producción', value: stats.produccion, icon: Wrench, color: 'text-amber-600', bg: 'bg-amber-50' },
-          { label: 'Terceros / Externos', value: stats.terceros, icon: Truck, color: 'text-emerald-600', bg: 'bg-emerald-50' }
-        ].map((stat, i) => (
-          <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-slate-500">{stat.label}</p>
-              <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
-            </div>
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color}`}>
-              <stat.icon size={24} />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* SEARCH & FILTERS */}
-      <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col lg:flex-row gap-6 items-center">
-        <div className="flex-1 relative w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-          <input 
-            type="text" 
-            placeholder="Buscar por nombre del servicio..." 
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg pl-12 pr-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm text-slate-800 placeholder:text-slate-400"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
-          {[
-            { id: 'all', label: 'Todos' },
-            { id: 0, label: 'Inventario' },
-            { id: 1, label: 'Fabricación' },
-            { id: 2, label: 'Terceros' }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setFilterType(tab.id as any)}
-              className={`
-                px-4 py-2 rounded-lg text-sm font-medium transition-all
-                ${filterType === tab.id 
-                  ? 'bg-slate-800 text-white' 
-                  : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'}
-              `}
-            >
-              {tab.label}
-            </button>
-          ))}
-          <div className="w-px h-8 bg-slate-200 mx-2 hidden sm:block" />
-          <button 
-            onClick={loadServicios} 
-            className="w-10 h-10 flex items-center justify-center bg-slate-50 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-100 transition-colors shrink-0"
-            title="Actualizar"
+          { id: 'all', label: 'Todos' },
+          { id: 'inventory', label: 'Inventario' },
+          { id: 'production', label: 'Producción' },
+          { id: 'third', label: 'Terceros' }
+        ].map(filter => (
+          <button
+            key={filter.id}
+            type="button"
+            onClick={() => setFilterType(filter.id as ServiceFilter)}
+            className={`rounded-lg px-4 py-2 text-xs font-black transition ${
+              filterType === filter.id ? 'bg-slate-900 text-white' : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
+            }`}
           >
-            <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+            {filter.label}
           </button>
+        ))}
+      </CatalogToolbar>
+
+      {loading ? (
+        <LoadingState label="Cargando servicios..." />
+      ) : filteredServicios.length > 0 ? (
+        <div className={viewMode === 'grid' ? 'grid gap-4 md:grid-cols-2 xl:grid-cols-3' : 'space-y-3'}>
+          {filteredServicios.map(servicio => (
+            viewMode === 'grid' ? (
+              <ServiceCard
+                key={servicio.id}
+                servicio={servicio}
+                onEdit={() => handleEdit(servicio)}
+                onDelete={() => handleDelete(servicio.id)}
+              />
+            ) : (
+              <ServiceListItem
+                key={servicio.id}
+                servicio={servicio}
+                onEdit={() => handleEdit(servicio)}
+                onDelete={() => handleDelete(servicio.id)}
+              />
+            )
+          ))}
         </div>
-      </div>
+      ) : (
+        <EmptyState
+          title="No hay servicios"
+          subtitle="No encontramos servicios con los filtros actuales."
+          actionLabel="Limpiar filtros"
+          onAction={() => {
+            setSearchTerm('');
+            setFilterType('all');
+          }}
+        />
+      )}
 
-      {/* SERVICES LIST */}
-      <div className="flex flex-col gap-4">
-        {loading ? (
-          <div className="py-24 flex flex-col items-center justify-center space-y-4">
-            <RefreshCw className="w-10 h-10 text-indigo-400 animate-spin" />
-            <p className="text-slate-500 font-medium text-sm">Cargando servicios...</p>
-          </div>
-        ) : filteredServicios.length > 0 ? (
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200">
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider">Servicio</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider text-center">Tipo / Origen</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider text-center">Mínimo</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider text-right">Precio Venta</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider text-right">Margen</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-600 uppercase tracking-wider text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredServicios.map((servicio) => {
-                    const typeInfo = getTypeInfo(servicio.tipo);
-                    const margen = servicio.precioProveedor > 0 
-                      ? (((servicio.costoBase - servicio.precioProveedor) / servicio.costoBase) * 100).toFixed(0)
-                      : null;
-
-                    return (
-                      <tr key={servicio.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center bg-${typeInfo.color}-50 text-${typeInfo.color}-600 shrink-0`}>
-                              <typeInfo.icon size={18} />
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="font-semibold text-slate-800 text-sm">{servicio.nombre}</span>
-                              {servicio.descripcion && (
-                                <span className="text-xs text-slate-500 mt-0.5 line-clamp-1">{servicio.descripcion}</span>
-                              )}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <div className="flex flex-col items-center">
-                            <span className={`text-xs font-medium px-2 py-0.5 rounded text-${typeInfo.color}-700 bg-${typeInfo.color}-50 border border-${typeInfo.color}-200`}>
-                              {typeInfo.label}
-                            </span>
-                            <span className="text-xs text-slate-500 mt-1 truncate max-w-[120px]" title={servicio.articuloNombre || servicio.productoNombre || servicio.proveedorNombre || 'Sistema'}>
-                              {servicio.articuloNombre || servicio.productoNombre || servicio.proveedorNombre || '-'}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-center">
-                          <span className="text-sm font-semibold text-slate-700">{servicio.cantidadMinima} u.</span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <span className="text-sm font-bold text-slate-800">${servicio.costoBase.toLocaleString()}</span>
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          {margen ? (
-                            <div className="flex flex-col items-end">
-                              <span className="text-sm font-semibold text-emerald-600">{margen}%</span>
-                              <span className="text-xs text-slate-500" title={`Costo proveedor: $${servicio.precioProveedor.toLocaleString()}`}>
-                                Costo: ${servicio.precioProveedor.toLocaleString()}
-                              </span>
-                            </div>
-                          ) : (
-                            <span className="text-sm text-slate-400">-</span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <button 
-                              onClick={() => handleEdit(servicio)}
-                              className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
-                              title="Editar"
-                            >
-                              <Edit size={18} />
-                            </button>
-                            <button 
-                              onClick={() => handleDelete(servicio.id)}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors"
-                              title="Eliminar"
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        ) : (
-          <div className="py-24 flex flex-col items-center justify-center text-center px-4 bg-white border border-slate-200 rounded-2xl">
-             <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center text-slate-300 mb-4">
-               <Zap size={32} />
-             </div>
-             <h3 className="text-lg font-bold text-slate-800 mb-1">Catálogo vacío</h3>
-             <p className="text-sm text-slate-500 mb-6 max-w-sm">No se encontraron servicios que coincidan con los filtros.</p>
-             <button 
-              onClick={() => {
-                setSearchTerm('');
-                setFilterType('all');
-              }}
-              className="px-5 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-medium hover:bg-slate-200 transition-colors"
-             >
-               Limpiar Filtros
-             </button>
-          </div>
-        )}
-      </div>
-
-      <ServicioModal 
-        isOpen={isModalOpen} 
+      <ServicioModal
+        isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
           setSelectedServicio(null);
-        }} 
-        onSuccess={loadServicios} 
+        }}
+        onSuccess={loadServicios}
         servicio={selectedServicio}
       />
     </div>
   );
 };
+
+const CatalogHeader = ({
+  icon: Icon,
+  title,
+  subtitle,
+  actionLabel,
+  onAction
+}: {
+  icon: LucideIcon;
+  title: string;
+  subtitle: string;
+  actionLabel: string;
+  onAction: () => void;
+}) => (
+  <div className="flex flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm lg:flex-row lg:items-center lg:justify-between">
+    <div className="flex items-center gap-5">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
+        <Icon size={26} />
+      </div>
+      <div>
+        <h1 className="text-2xl font-black text-slate-900">{title}</h1>
+        <p className="mt-1 text-sm font-semibold text-slate-500">{subtitle}</p>
+      </div>
+    </div>
+    <button
+      type="button"
+      onClick={onAction}
+      className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-xs font-black text-white shadow-lg shadow-blue-600/20 transition hover:bg-slate-900"
+    >
+      <Plus size={17} />
+      {actionLabel}
+    </button>
+  </div>
+);
+
+const CatalogToolbar = ({
+  search,
+  onSearch,
+  placeholder,
+  onRefresh,
+  loading,
+  viewMode,
+  onViewModeChange,
+  children
+}: {
+  search: string;
+  onSearch: (value: string) => void;
+  placeholder: string;
+  onRefresh: () => void;
+  loading: boolean;
+  viewMode: ViewMode;
+  onViewModeChange: (value: ViewMode) => void;
+  children: ReactNode;
+}) => (
+  <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm xl:flex-row xl:items-center xl:justify-between">
+    <div className="relative xl:w-[420px]">
+      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+      <input className={`${inputClass} pl-11`} placeholder={placeholder} value={search} onChange={event => onSearch(event.target.value)} />
+    </div>
+    <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap gap-1 rounded-xl bg-slate-100 p-1">{children}</div>
+      <div className="flex gap-1 rounded-xl bg-slate-100 p-1">
+        <button type="button" onClick={() => onViewModeChange('grid')} className={`flex h-9 w-9 items-center justify-center rounded-lg transition ${viewMode === 'grid' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
+          <LayoutGrid size={16} />
+        </button>
+        <button type="button" onClick={() => onViewModeChange('list')} className={`flex h-9 w-9 items-center justify-center rounded-lg transition ${viewMode === 'list' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>
+          <List size={16} />
+        </button>
+      </div>
+      <button
+        type="button"
+        onClick={onRefresh}
+        className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50"
+      >
+        <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+      </button>
+    </div>
+  </div>
+);
+
+const MetricCard = ({ label, value, icon: Icon }: { label: string; value: string; icon: LucideIcon }) => (
+  <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-xs font-black uppercase tracking-wide text-slate-400">{label}</p>
+        <p className="mt-2 text-2xl font-black text-slate-900">{value}</p>
+      </div>
+      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 text-blue-600">
+        <Icon size={22} />
+      </div>
+    </div>
+  </div>
+);
+
+const ServiceCard = ({ servicio, onEdit, onDelete }: { servicio: Servicio; onEdit: () => void; onDelete: () => void }) => {
+  const typeInfo = getTypeInfo(servicio.tipo);
+  const TypeIcon = typeInfo.icon;
+  const source = servicio.articuloNombre || servicio.productoNombre || servicio.proveedorNombre || 'Sin origen vinculado';
+  const margin = servicio.precioProveedor > 0 ? servicio.costoBase - servicio.precioProveedor : null;
+
+  return (
+    <article className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg">
+      <div className="relative aspect-[16/10] max-h-56 bg-slate-100">
+        <MediaViewerR2 url={servicio.imagenUrl || ''} alt={servicio.nombre} className="h-full w-full" />
+        <span className={`absolute left-3 top-3 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-black ${typeInfo.classes}`}>
+          <TypeIcon size={13} />
+          {typeInfo.label}
+        </span>
+        {servicio.requiereTemporizador && (
+          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs font-black text-blue-600 shadow-sm">
+            <Timer size={13} />
+            {servicio.duracionMinutos} min
+          </span>
+        )}
+      </div>
+      <div className="space-y-4 p-5">
+        <div>
+          <h2 className="text-base font-black text-slate-900">{servicio.nombre}</h2>
+          <p className="mt-1 min-h-10 overflow-hidden text-sm font-semibold leading-5 text-slate-500">
+            {servicio.descripcion || 'Sin descripción comercial.'}
+          </p>
+        </div>
+
+        <div className="rounded-xl bg-slate-50 p-3">
+          <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">{typeInfo.sourceLabel}</p>
+          <p className="mt-1 truncate text-sm font-bold text-slate-800">{source}</p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          <MiniStat label="Venta" value={`$${servicio.costoBase.toLocaleString()}`} />
+          <MiniStat label="Mínimo" value={`${servicio.cantidadMinima}u`} />
+          <MiniStat label="Margen" value={margin !== null ? `$${margin.toLocaleString()}` : '-'} good={margin !== null && margin >= 0} />
+        </div>
+
+        <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
+          <button type="button" onClick={onEdit} className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-500 transition hover:bg-blue-50 hover:text-blue-600">
+            <Edit size={17} />
+          </button>
+          <button type="button" onClick={onDelete} className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-500 transition hover:bg-rose-50 hover:text-rose-600">
+            <Trash2 size={17} />
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+};
+
+const ServiceListItem = ({ servicio, onEdit, onDelete }: { servicio: Servicio; onEdit: () => void; onDelete: () => void }) => {
+  const typeInfo = getTypeInfo(servicio.tipo);
+  const TypeIcon = typeInfo.icon;
+  const source = servicio.articuloNombre || servicio.productoNombre || servicio.proveedorNombre || 'Sin origen vinculado';
+
+  return (
+    <article className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:border-blue-200 hover:shadow-md md:grid-cols-[120px_1fr_auto] md:items-center">
+      <div className="relative h-28 overflow-hidden rounded-xl bg-slate-100 md:h-24">
+        <MediaViewerR2 url={servicio.imagenUrl || ''} alt={servicio.nombre} className="h-full w-full" />
+      </div>
+      <div className="min-w-0">
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <span className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-black ${typeInfo.classes}`}>
+            <TypeIcon size={13} />
+            {typeInfo.label}
+          </span>
+          {servicio.requiereTemporizador && <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">{servicio.duracionMinutos} min</span>}
+        </div>
+        <h2 className="truncate text-base font-black text-slate-900">{servicio.nombre}</h2>
+        <p className="mt-1 truncate text-sm font-semibold text-slate-500">{servicio.descripcion || source}</p>
+        <p className="mt-2 text-xs font-black uppercase tracking-wide text-slate-400">{source}</p>
+      </div>
+      <div className="flex items-center justify-between gap-4 md:justify-end">
+        <div className="text-right">
+          <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">Venta</p>
+          <p className="text-lg font-black text-slate-900">${servicio.costoBase.toLocaleString()}</p>
+        </div>
+        <div className="flex gap-2">
+          <button type="button" onClick={onEdit} className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-500 transition hover:bg-blue-50 hover:text-blue-600">
+            <Edit size={17} />
+          </button>
+          <button type="button" onClick={onDelete} className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-500 transition hover:bg-rose-50 hover:text-rose-600">
+            <Trash2 size={17} />
+          </button>
+        </div>
+      </div>
+    </article>
+  );
+};
+
+const MiniStat = ({ label, value, good = false }: { label: string; value: string; good?: boolean }) => (
+  <div className="rounded-xl bg-slate-50 px-3 py-2 text-center">
+    <p className="text-[10px] font-black uppercase tracking-wide text-slate-400">{label}</p>
+    <p className={`mt-1 text-sm font-black ${good ? 'text-emerald-600' : 'text-slate-900'}`}>{value}</p>
+  </div>
+);
+
+const LoadingState = ({ label }: { label: string }) => (
+  <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-slate-200 bg-white py-24">
+    <RefreshCw className="animate-spin text-blue-500" size={32} />
+    <p className="text-sm font-semibold text-slate-400">{label}</p>
+  </div>
+);
+
+const EmptyState = ({ title, subtitle, actionLabel, onAction }: { title: string; subtitle: string; actionLabel: string; onAction: () => void }) => (
+  <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-16 text-center">
+    <Zap className="mx-auto text-slate-200" size={40} />
+    <h3 className="mt-4 text-lg font-black text-slate-900">{title}</h3>
+    <p className="mt-1 text-sm font-semibold text-slate-400">{subtitle}</p>
+    <button type="button" onClick={onAction} className="mt-6 rounded-xl bg-slate-900 px-5 py-3 text-xs font-black text-white transition hover:bg-blue-600">
+      {actionLabel}
+    </button>
+  </div>
+);
 
 export default ServiciosPage;

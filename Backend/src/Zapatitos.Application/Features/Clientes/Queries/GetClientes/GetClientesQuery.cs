@@ -11,7 +11,7 @@ namespace Zapatitos.Application.Features.Clientes.Queries.GetClientes;
 
 public record GetClientesQuery : IRequest<Result<IEnumerable<ClienteDto>>>;
 
-public record ClienteDto(long Id, string NombreCompleto, string? Telefono, string? Direccion);
+public record ClienteDto(long Id, string NombreCompleto, string? Telefono, string? Direccion, string? FotoPerfilUrl);
 
 public class GetClientesQueryHandler : IRequestHandler<GetClientesQuery, Result<IEnumerable<ClienteDto>>>
 {
@@ -26,7 +26,7 @@ public class GetClientesQueryHandler : IRequestHandler<GetClientesQuery, Result<
     {
         var clientes = await _unitOfWork.Repository<Zapatitos.Domain.Entities.Cliente>()
             .Query()
-            .Select(c => new ClienteDto(c.Id, c.NombreCompleto, c.Telefono, c.Direccion))
+            .Select(c => new ClienteDto(c.Id, c.NombreCompleto, c.Telefono, c.Direccion, c.FotoPerfilUrl))
             .ToListAsync(cancellationToken);
 
         return Result<IEnumerable<ClienteDto>>.Success(clientes);

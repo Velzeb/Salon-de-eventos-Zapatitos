@@ -12,6 +12,7 @@ public class Cliente : BaseEntity
     public string? Telefono { get; set; }
     public string? Direccion { get; set; }
     public DateTime? FechaNacimiento { get; set; }
+    public string? FotoPerfilUrl { get; set; }
     
     public virtual ICollection<Evento> Eventos { get; set; } = new List<Evento>();
     public virtual ICollection<Nino> Ninos { get; set; } = new List<Nino>();
@@ -28,6 +29,7 @@ public class Empleado : BaseEntity
     public decimal PagoPorEvento { get; set; }
     public DateTime FechaIngreso { get; set; }
     public Enums.EstadoGeneral Estado { get; set; } = Enums.EstadoGeneral.Activo;
+    public string? FotoPerfilUrl { get; set; }
 }
 
 public class Proveedor : BaseEntity

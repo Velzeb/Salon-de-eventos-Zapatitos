@@ -10,7 +10,7 @@ using Zapatitos.Domain.Entities;
 
 namespace Zapatitos.Application.Features.Empleados.Queries.GetEmpleados;
 
-public record EmpleadoDto(long Id, string NombreCompleto, string? Puesto, string Email, string Estado);
+public record EmpleadoDto(long Id, string NombreCompleto, string? Puesto, string Email, string Estado, string? FotoPerfilUrl);
 
 public record GetEmpleadosQuery : IRequest<Result<IEnumerable<EmpleadoDto>>>;
 
@@ -33,7 +33,8 @@ public class GetEmpleadosQueryHandler : IRequestHandler<GetEmpleadosQuery, Resul
                 e.NombreCompleto,
                 e.Puesto,
                 e.Usuario.Email,
-                e.Estado.ToString()
+                e.Estado.ToString(),
+                e.FotoPerfilUrl
             ))
             .ToListAsync(cancellationToken);
 

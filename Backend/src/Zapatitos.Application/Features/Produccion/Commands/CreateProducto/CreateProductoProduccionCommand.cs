@@ -22,6 +22,7 @@ public record CreateProductoProduccionCommand : IRequest<Result<long>>
     public string? Descripcion { get; init; }
     public int CantidadProducida { get; init; } = 1;
     public string? UnidadMedida { get; init; }
+    public string? ImagenUrl { get; init; }
     public List<IngredienteCommand> Ingredientes { get; init; } = new();
 }
 
@@ -42,6 +43,7 @@ public class CreateProductoProduccionCommandHandler : IRequestHandler<CreateProd
             Descripcion = request.Descripcion,
             CantidadProducida = request.CantidadProducida,
             UnidadMedida = request.UnidadMedida,
+            ImagenUrl = request.ImagenUrl,
             Ingredientes = request.Ingredientes.Select(i => new RecetaIngrediente
             {
                 ArticuloInventarioId = i.ArticuloInventarioId,

@@ -35,9 +35,7 @@ export const disponibilidadService = {
 
   getAvailableSlots: async (date: string): Promise<AvailableSlot[]> => {
     try {
-      console.log(`Consultando disponibilidad para: ${date}`);
       const response = await apiClient.get<AvailableSlot[]>(`/disponibilidad/available?date=${date}`);
-      console.log('Slots recibidos:', response.data);
       return response.data;
     } catch (e) {
       console.error('Error en getAvailableSlots:', e);

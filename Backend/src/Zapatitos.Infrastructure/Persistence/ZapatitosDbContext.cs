@@ -118,10 +118,11 @@ public class ZapatitosDbContext : DbContext
         modelBuilder.Entity<AsignacionStaff>()
             .ToTable("asignaciones_staff");
 
-        modelBuilder.Entity<TareaOperativa>()
-            .ToTable("tareas_operativas")
-            .Property(t => t.AsignadoAId)
-            .HasColumnName("asignado_a");
+        modelBuilder.Entity<TareaOperativa>(entity => {
+            entity.ToTable("tareas_operativas");
+            entity.Property(t => t.AsignadoAId).HasColumnName("asignado_a");
+            entity.Property(t => t.ArticuloInventarioId).HasColumnName("articulo_inventario_id");
+        });
             
         modelBuilder.Entity<ConsumoExtra>()
             .ToTable("consumos_extras");
@@ -162,8 +163,11 @@ public class ZapatitosDbContext : DbContext
         modelBuilder.Entity<DisponibilidadConfig>()
             .ToTable("disponibilidad_config");
 
-        modelBuilder.Entity<EventoItem>()
-            .ToTable("evento_items");
+        modelBuilder.Entity<EventoItem>(entity => {
+            entity.ToTable("evento_items");
+            entity.Property(e => e.ArticuloId).HasColumnName("articulo_id");
+            entity.Property(e => e.ServicioId).HasColumnName("servicio_id");
+        });
 
         modelBuilder.Entity<FotoEvento>()
             .ToTable("foto_evento");
@@ -189,6 +193,12 @@ public class ZapatitosDbContext : DbContext
         });
 
         // Mapeos Many-to-Many: Evento - Cliente (Responsables)
+        modelBuilder.Entity<Evento>()
+            .HasOne(e => e.Paquete)
+            .WithMany()
+            .HasForeignKey(e => e.PaqueteId)
+            .IsRequired(false);
+
         modelBuilder.Entity<Evento>()
             .HasMany(e => e.ClientesResponsables)
             .WithMany(c => c.Eventos)

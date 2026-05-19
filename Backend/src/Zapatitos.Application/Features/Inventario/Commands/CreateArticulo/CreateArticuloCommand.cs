@@ -17,6 +17,7 @@ public record CreateArticuloCommand : IRequest<Result<long>>
     public string? UnidadMedida { get; init; }
     public decimal PrecioCosto { get; init; }
     public long? ProveedorId { get; init; }
+    public string? ImagenUrl { get; init; }
 }
 
 public class CreateArticuloCommandHandler : IRequestHandler<CreateArticuloCommand, Result<long>>
@@ -39,7 +40,8 @@ public class CreateArticuloCommandHandler : IRequestHandler<CreateArticuloComman
             ControlarStock = request.ControlarStock,
             UnidadMedida = request.UnidadMedida,
             PrecioCosto = request.PrecioCosto,
-            ProveedorId = request.ProveedorId
+            ProveedorId = request.ProveedorId,
+            ImagenUrl = request.ImagenUrl
         };
 
         await _unitOfWork.Repository<ArticuloInventario>().AddAsync(articulo);

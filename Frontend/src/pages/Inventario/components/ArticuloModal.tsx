@@ -5,6 +5,7 @@ import { inventarioService } from '../../../services/inventarioService';
 import type { CreateArticuloCommand, Articulo } from '../../../services/inventarioService';
 import { proveedoresService } from '../../../services/proveedoresService';
 import type { Proveedor } from '../../../services/proveedoresService';
+import ImageUpload from '../../../components/common/ImageUpload';
 interface ArticuloModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -24,7 +25,8 @@ const ArticuloModal = ({ isOpen, onClose, onSuccess, articulo }: ArticuloModalPr
     controlarStock: true,
     unidadMedida: 'Unidades',
     precioCosto: 0,
-    proveedorId: undefined
+    proveedorId: undefined,
+    imagenUrl: ''
   });
 
   useEffect(() => {
@@ -37,7 +39,8 @@ const ArticuloModal = ({ isOpen, onClose, onSuccess, articulo }: ArticuloModalPr
         controlarStock: articulo.controlarStock,
         unidadMedida: articulo.unidadMedida || 'Unidades',
         precioCosto: articulo.precioCosto,
-        proveedorId: articulo.proveedorId
+        proveedorId: articulo.proveedorId,
+        imagenUrl: articulo.imagenUrl || ''
       });
       setPrecioSinDefinir(articulo.precioCosto === 0);
     } else {
@@ -49,7 +52,8 @@ const ArticuloModal = ({ isOpen, onClose, onSuccess, articulo }: ArticuloModalPr
         controlarStock: true,
         unidadMedida: 'Unidades',
         precioCosto: 0,
-        proveedorId: undefined
+        proveedorId: undefined,
+        imagenUrl: ''
       });
       setPrecioSinDefinir(false);
     }
@@ -149,6 +153,15 @@ const ArticuloModal = ({ isOpen, onClose, onSuccess, articulo }: ArticuloModalPr
                     rows={3}
                     value={formData.descripcion}
                     onChange={e => setFormData({...formData, descripcion: e.target.value})}
+                  />
+                </div>
+                
+                <div className="pt-2">
+                  <ImageUpload
+                    value={formData.imagenUrl}
+                    onChange={(url) => setFormData({ ...formData, imagenUrl: url })}
+                    folder="inventario"
+                    label="Imagen o Video del Artículo de Inventario"
                   />
                 </div>
               </div>

@@ -11,6 +11,7 @@ export interface Articulo {
   precioCosto: number;
   proveedorNombre?: string;
   proveedorId?: number;
+  imagenUrl?: string;
 }
 
 export interface CreateArticuloCommand {
@@ -22,6 +23,7 @@ export interface CreateArticuloCommand {
   unidadMedida?: string;
   precioCosto: number;
   proveedorId?: number;
+  imagenUrl?: string;
 }
 
 export const inventarioService = {

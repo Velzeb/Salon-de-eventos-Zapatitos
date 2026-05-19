@@ -15,6 +15,13 @@ namespace Zapatitos.API.Controllers;
 [Authorize]
 public class EventosController : ApiControllerBase
 {
+    [HttpGet("calendario")]
+    [Authorize(Roles = "Administrador,Empleado")]
+    public async Task<ActionResult<IEnumerable<Zapatitos.Application.Features.Eventos.Queries.GetCalendarEvents.CalendarEventDto>>> GetCalendar()
+    {
+        return await Mediator.Send(new Zapatitos.Application.Features.Eventos.Queries.GetCalendarEvents.GetCalendarEventsQuery());
+    }
+
     [HttpGet]
     [Authorize(Roles = "Administrador,Empleado")]
     public async Task<ActionResult<IEnumerable<EventoDto>>> GetAll()

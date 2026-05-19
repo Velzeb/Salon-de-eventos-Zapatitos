@@ -1,0 +1,103 @@
+
+>                 {activeTab === 'resumen' && (
+                    <div className="bg-white border border-slate-200 rounded-2xl p-10 shadow-sm flex flex-col items-center justify-center space-y-6">
+                      <div className="w-24 h-24 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center">
+                        <CheckCircle2 size={40} />
+                      </div>
+                      <div className="text-center">
+                        <h3 className="text-2xl font-bold text-slate-900 tracking-tighter uppercase italic">Validación de Reserva</h3>
+                        <p className="text-slate-500 font-bold mt-2 text-sm">Revisa el comprobante del pago inicial (si existe) y confirma para continuar.</p>
+                      </div>
+                      {(() => {
+                        const pagoConComprobante = data.pagos?.find(p => !!p.comprobanteUrl);
+                        if (pagoConComprobante?.comprobanteUrl) {
+                          return (
+                            <img
+                              src={pagoConComprobante.comprobanteUrl}
+                              className="max-w-md w-full rounded-2xl shadow-lg border border-slate-200"
+                              alt="Comprobante de pago"
+                            />
+                          );
+                        }
+                        return (
+                          <div className="w-full max-w-md p-10 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center text-slate-400 bg-slate-50">
+                            <AlertTriangle size={32} className="mb-2" />
+                            <p className="font-bold text-sm">No se adjuntó comprobante en línea.</p>
+                            <p className="text-xs text-slate-400 mt-1  text-center">Puedes aceptar si el pago fue en efectivo o por otro medio acordado.</p>
+                          </div>
+                        );
+                      })()}
+                      <div className="flex gap-4 pt-4 w-full max-w-md">
+                        <button onClick={() => handleUpdateEstado('Cancelado')} className="flex-1 py-4 bg-white border border-rose-200 text-rose-600 font-bold rounded-xl  text-xs hover:bg-rose-50 transition-colors">Rechazar</button>
+                        <button onClick={() => handleUpdateEstado('Reservado')} className="flex-1 py-4 bg-emerald-600 text-white font-bold rounded-xl  text-xs shadow-lg shadow-emerald-100 hover:bg-emerald-700 transition-colors">Aceptar Reserva</button>
+                      </div>
+                    </div>
+                  )}
+  
+                  {activeTab === 'logistica' && (
+                    <div className="grid grid-cols-1 gap-6">
+                      {/* AUDITORÍA DE INSUMOS CRÍTICOS */}
+                      {data.tareas.some(t => t.articuloId && t.cantidadRequerida > t.stockActual && !t.stockDescontado) && (
+                        <motion.div 
+                          initial={{ opacity: 0, y: -20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="bg-rose-50 border-2 border-rose-200 p-8 rounded-2xl shadow-xl shadow-rose-100/50"
+                        >
+                          <div className="flex items-center gap-6 mb-6">
+                            <div className="w-14 h-14 bg-rose-600 text-white rounded-2xl flex items-center justify-center shadow-lg animate-pulse">
+                              <AlertTriangle size={28} />
+                            </div>
+                            <div>
+                              <h3 className="text-xl font-bold text-rose-900 uppercase italic">¡Atención: Faltan Suministros!</h3>
+                              <p className="text-rose-700 font-bold text-xs  mt-1">Se detectaron faltantes para este evento</p>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {data.tareas
+                              .filter(t => t.articuloId && t.cantidadRequerida > t.stockActual && !t.stockDescontado)
+                              .map(t => (
+                                <div key={t.id} className="bg-white/80 backdrop-blur-sm p-4 rounded-2xl border border-rose-200 flex justify-between items-center">
+                                  <div>
+                                    <p className="font-bold text-slate-800 text-sm">{t.nombre}</p>
+                                    <p className="text-xs text-rose-600 font-bold uppercase">Faltan {t.cantidadRequerida - t.stockActual} unidades</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-xs text-slate-400 font-bold uppercase">Stock Actual</p>
+                                    <p className="text-lg font-bold text-slate-600">{t.stockActual}</p>
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        </motion.div>
+                      )}
+  
+                      {/* Servicios Temporizados movidos a Cronograma */}
+  
+                      {/* CHECKLIST DE PREPARACIÓN - CON CRUD */}
+                      <ChecklistLogistica 
+                        tareas={data.tareas} 
+                        allEmpleados={allEmpleados}
+                        onComplete={handleCompleteTarea}
+                        onAssign={handleAssignTarea}
+                        onCreate={async (cmd) => { if(!id) return; await operativoService.createTarea({ ...cmd, eventoId: parseInt(id) }); await loadData(); }}
+                        onUpdate={async (cmd) => { await operativoService.updateTarea(cmd); await loadData(); }}
+                        onDelete={async (tareaId) => { if(!window.confirm('¿Eliminar tarea?')) return; await operativoService.deleteTarea(tareaId); await loadData(); }}
+                      />
+  
+                      <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                         <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                            <h3 className="text-sm font-bold text-slate-700">Reporte del Evento</h3>
+                            <button onClick={handleSaveNotas} disabled={savingNotas} className="text-blue-600 text-xs font-bold flex items-center gap-1">{savingNotas ? <RefreshCw className="animate-spin" size={12} /> : <Save size={12} />}Guardar</button>
+                         </div>
+                         <div className="p-6"><textarea className="w-full h-40 bg-slate-50 border border-slate-200 rounded-lg p-4 text-sm text-slate-700 outline-none" value={notas} onChange={e => setNotas(e.target.value)} placeholder="Notas del evento..." /></div>
+                      </div>
+                    </div>
+                  )}
+  
+                  {activeTab === 'preferencias' && (
+                    <div className="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden max-w-4xl mx-auto">
+                      <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                        <div>
+                          <h3 className="text-base font-bold text-slate-800">Preferencias del Evento</h3>
+                          <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Personalización y logística del cumpleañero</p>
+

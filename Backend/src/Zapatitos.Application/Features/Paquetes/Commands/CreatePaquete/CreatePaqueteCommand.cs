@@ -16,6 +16,7 @@ public record CreatePaqueteCommand : IRequest<Result<long>>
     public decimal Descuento { get; init; }
     public List<PaqueteServicioInput> Servicios { get; init; } = new();
     public List<PaqueteArticuloInput> Articulos { get; init; } = new();
+    public string? ImagenUrl { get; init; }
 }
 
 public record PaqueteServicioInput(long ServicioId, int Cantidad);
@@ -39,7 +40,8 @@ public class CreatePaqueteCommandHandler : IRequestHandler<CreatePaqueteCommand,
             PrecioBase = request.PrecioBase,
             Descuento = request.Descuento,
             CapacidadNinos = 0, // Inhabilitado por diseño de catálogo
-            DuracionHoras = 0   // Inhabilitado por diseño de catálogo
+            DuracionHoras = 0,  // Inhabilitado por diseño de catálogo
+            ImagenUrl = request.ImagenUrl
         };
 
         // Vincular servicios con cantidad

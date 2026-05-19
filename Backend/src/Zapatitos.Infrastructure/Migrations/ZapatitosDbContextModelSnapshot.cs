@@ -1950,6 +1950,10 @@ namespace Zapatitos.Infrastructure.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("evento_id");
 
+                    b.Property<long?>("EventoItemId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("evento_item_id");
+
                     b.Property<DateTime?>("FechaCompletada")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("fecha_completada");
@@ -1967,6 +1971,11 @@ namespace Zapatitos.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("stock_descontado");
 
+                    b.Property<string>("TipoTarea")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("tipo_tarea");
+
                     b.Property<int>("Version")
                         .HasColumnType("integer")
                         .HasColumnName("version");
@@ -1982,6 +1991,9 @@ namespace Zapatitos.Infrastructure.Migrations
 
                     b.HasIndex("EventoId")
                         .HasDatabaseName("ix_tareas_operativas_evento_id");
+
+                    b.HasIndex("EventoItemId")
+                        .HasDatabaseName("ix_tareas_operativas_evento_item_id");
 
                     b.ToTable("tareas_operativas", (string)null);
                 });
@@ -2500,11 +2512,18 @@ namespace Zapatitos.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_tareas_operativas_eventos_evento_id");
 
+                    b.HasOne("Zapatitos.Domain.Entities.EventoItem", "EventoItem")
+                        .WithMany()
+                        .HasForeignKey("EventoItemId")
+                        .HasConstraintName("fk_tareas_operativas_evento_items_evento_item_id");
+
                     b.Navigation("ArticuloInventario");
 
                     b.Navigation("AsignadoA");
 
                     b.Navigation("Evento");
+
+                    b.Navigation("EventoItem");
                 });
 
             modelBuilder.Entity("eventos_clientes", b =>

@@ -32,7 +32,7 @@ const Sidebar = () => {
       try {
         const pagos = await finanzasService.getPagos();
         setPendingPaymentsCount(pagos.filter(p => p.estado === 'Pendiente').length);
-      } catch (err) {
+      } catch {
         // Silently fail
       }
     };
@@ -79,6 +79,7 @@ const Sidebar = () => {
     {
       label: 'Administración',
       items: [
+        { icon: Users, label: 'Clientes', path: '/admin/clientes', desc: 'CRM y Expedientes' },
         { icon: Users, label: 'Empleados', path: '/admin/empleados', desc: 'Equipo Humano' },
         { icon: Settings, label: 'Plataforma', path: '/admin/cms', desc: 'Configuración Web' },
       ]

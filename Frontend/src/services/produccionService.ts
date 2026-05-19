@@ -15,6 +15,7 @@ export interface ProductoProduccion {
     cantidadProducida: number;
     unidadMedida: string | null;
     estado: string;
+    imagenUrl?: string;
     ingredientes: Ingrediente[];
 }
 
@@ -29,6 +30,7 @@ export interface CreateProductoProduccionCommand {
     descripcion: string | null;
     cantidadProducida: number;
     unidadMedida: string | null;
+    imagenUrl?: string;
     ingredientes: IngredienteCommand[];
 }
 

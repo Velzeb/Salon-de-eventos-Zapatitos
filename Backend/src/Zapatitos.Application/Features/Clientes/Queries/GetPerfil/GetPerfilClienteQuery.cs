@@ -17,6 +17,7 @@ public class PerfilClienteDto
     public string? Telefono { get; set; }
     public string? Direccion { get; set; }
     public string Email { get; set; } = null!;
+    public string? FotoPerfilUrl { get; set; }
     public List<NinoPerfilDto> Ninos { get; set; } = new();
 }
 
@@ -51,6 +52,7 @@ public class GetPerfilClienteQueryHandler : IRequestHandler<GetPerfilClienteQuer
             Telefono = cliente.Telefono,
             Direccion = cliente.Direccion,
             Email = cliente.Usuario?.Email ?? "",
+            FotoPerfilUrl = cliente.FotoPerfilUrl,
             Ninos = cliente.Ninos.Select(n => new NinoPerfilDto
             {
                 Id = n.Id,

@@ -5,11 +5,13 @@ import {
   Plus, 
   Trash2, 
   RefreshCw,
-  Boxes
+  Boxes,
+  Package
 } from 'lucide-react';
 import { inventarioService, type Articulo } from '../../../services/inventarioService';
 import { produccionService, type ProductoProduccion, type CreateProductoProduccionCommand, type IngredienteCommand } from '../../../services/produccionService';
 import { toast } from 'sonner';
+import ImageUpload from '../../../components/common/ImageUpload';
 
 interface Props {
   isOpen: boolean;
@@ -26,6 +28,7 @@ const ProductoModal = ({ isOpen, onClose, onSuccess, producto }: Props) => {
     descripcion: '',
     cantidadProducida: 1,
     unidadMedida: 'unidades',
+    imagenUrl: '',
     ingredientes: []
   });
 
@@ -38,6 +41,7 @@ const ProductoModal = ({ isOpen, onClose, onSuccess, producto }: Props) => {
           descripcion: producto.descripcion || '',
           cantidadProducida: producto.cantidadProducida,
           unidadMedida: producto.unidadMedida || 'unidades',
+          imagenUrl: producto.imagenUrl || '',
           ingredientes: producto.ingredientes.map(i => ({
             articuloInventarioId: i.articuloInventarioId,
             cantidadRequerida: i.cantidadRequerida,
@@ -50,6 +54,7 @@ const ProductoModal = ({ isOpen, onClose, onSuccess, producto }: Props) => {
           descripcion: '',
           cantidadProducida: 1,
           unidadMedida: 'unidades',
+          imagenUrl: '',
           ingredientes: []
         });
       }
@@ -198,6 +203,14 @@ const ProductoModal = ({ isOpen, onClose, onSuccess, producto }: Props) => {
                 placeholder="Indique brevemente cómo se fabrica o ensambla este producto..."
               />
             </div>
+            <div className="md:col-span-2 pt-2">
+              <ImageUpload
+                value={formData.imagenUrl}
+                onChange={(url) => setFormData({ ...formData, imagenUrl: url })}
+                folder="produccion"
+                label="Imagen o Video del Producto Fabricado"
+              />
+            </div>
           </div>
 
           {/* INGREDIENTS SECTION */}
@@ -219,6 +232,24 @@ const ProductoModal = ({ isOpen, onClose, onSuccess, producto }: Props) => {
             <div className="space-y-4">
               {formData.ingredientes.map((ing, index) => (
                 <div key={index} className="flex flex-col md:flex-row items-stretch md:items-center gap-4 bg-slate-50 p-6 rounded-3xl border border-slate-100 group/item relative">
+                  {/* Thumbnail of selected ingredient */}
+                  {(() => {
+                    const matchedArt = articulos.find(a => a.id === parseInt(ing.articuloInventarioId as any));
+                    return (
+                      <div className="w-14 h-14 bg-white border border-slate-200 rounded-2xl overflow-hidden flex items-center justify-center shrink-0 shadow-sm self-center">
+                        {matchedArt?.imagenUrl ? (
+                          matchedArt.imagenUrl.match(/\.(mp4|webm|ogg|mov)$/i) || matchedArt.imagenUrl.includes('/videos/') ? (
+                            <video src={matchedArt.imagenUrl} className="w-full h-full object-cover" autoPlay loop muted playsInline />
+                          ) : (
+                            <img src={matchedArt.imagenUrl} alt={matchedArt.nombre} className="w-full h-full object-cover" />
+                          )
+                        ) : (
+                          <Package size={20} className="text-slate-300" />
+                        )}
+                      </div>
+                    );
+                  })()}
+
                   <div className="flex-1 space-y-2">
                     <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest ml-1">Insumo / Componente</label>
                     <select 

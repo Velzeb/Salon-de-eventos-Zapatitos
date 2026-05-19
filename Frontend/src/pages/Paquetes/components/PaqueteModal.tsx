@@ -3,6 +3,7 @@ import { X, Save, Zap, List, Plus, Search, RefreshCw, Info, ShoppingBag } from '
 import { toast } from 'sonner';
 import { paquetesService } from '../../../services/paquetesService';
 import type { CreatePaqueteCommand, Servicio } from '../../../services/paquetesService';
+import ImageUpload from '../../../components/common/ImageUpload';
 
 interface PaqueteModalProps {
   isOpen: boolean;
@@ -22,7 +23,8 @@ const PaqueteModal = ({ isOpen, onClose, onSuccess, onCreated }: PaqueteModalPro
     descripcion: '',
     precioBase: 0,
     descuento: 0,
-    servicios: []
+    servicios: [],
+    imagenUrl: ''
   });
 
   const pricing = useMemo(() => {
@@ -110,7 +112,8 @@ const PaqueteModal = ({ isOpen, onClose, onSuccess, onCreated }: PaqueteModalPro
         descripcion: '',
         precioBase: 0,
         descuento: 0,
-        servicios: []
+        servicios: [],
+        imagenUrl: ''
       });
       setErrors({});
     } catch (err) {
@@ -173,6 +176,15 @@ const PaqueteModal = ({ isOpen, onClose, onSuccess, onCreated }: PaqueteModalPro
                 className="w-full bg-slate-50 border border-slate-100 rounded-[2rem] px-8 py-6 text-sm font-bold outline-none focus:ring-8 focus:ring-primary/5 focus:border-primary transition-all min-h-[120px] resize-none"
                 value={formData.descripcion}
                 onChange={e => setFormData({...formData, descripcion: e.target.value})}
+              />
+            </div>
+
+            <div className="pt-2">
+              <ImageUpload
+                value={formData.imagenUrl}
+                onChange={(url) => setFormData({ ...formData, imagenUrl: url })}
+                folder="paquetes"
+                label="Imagen o Video de Referencia del Paquete"
               />
             </div>
           </div>

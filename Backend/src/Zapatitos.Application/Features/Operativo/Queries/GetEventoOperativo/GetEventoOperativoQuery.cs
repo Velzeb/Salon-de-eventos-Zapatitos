@@ -35,10 +35,7 @@ public class EventoOperativoDto
 
     // === FASE 5 ===
     public string? Tematica { get; set; }
-    public string? ColorManteleria { get; set; }
-    public string? SaborPastel { get; set; }
     public string? NotasDecoracion { get; set; }
-    public string? Alergias { get; set; }
     public List<ActividadCronogramaDto> Cronograma { get; set; } = new();
     public List<InvitadoDto> Invitados { get; set; } = new();
 
@@ -105,7 +102,10 @@ public class TareaOperativaDto
     public string Estado { get; set; } = null!;
     public string? AsignadoA { get; set; }
     public long? ArticuloId { get; set; }
+    public long? EventoItemId { get; set; }
+    public string TipoTarea { get; set; } = null!;
     public int CantidadRequerida { get; set; }
+    public int StockActual { get; set; }
     public bool StockDescontado { get; set; }
 }
 
@@ -125,6 +125,7 @@ public class StaffOperativoDto
     public string Nombre { get; set; } = null!;
     public string Rol { get; set; } = null!;
     public bool EsPagado { get; set; }
+    public string? FotoPerfilUrl { get; set; }
 }
 
 public class ItemOperativoDto
@@ -134,6 +135,9 @@ public class ItemOperativoDto
     public int Cantidad { get; set; }
     public bool EsIncluidoEnPaquete { get; set; }
     public string? Tipo { get; set; } // Articulo o Servicio
+    public bool RequiereTemporizador { get; set; }
+    public int DuracionMinutos { get; set; }
+    public string? ImagenUrl { get; set; }
 }
 
 public class GetEventoOperativoQueryHandler : IRequestHandler<GetEventoOperativoQuery, Result<EventoOperativoDto>>
@@ -159,9 +163,11 @@ public class GetEventoOperativoQueryHandler : IRequestHandler<GetEventoOperativo
             var evento = await _unitOfWork.Repository<Evento>().Query()
                 .Include(e => e.Paquete)
                 .Include(e => e.Tareas).ThenInclude(t => t.AsignadoA)
+                .Include(e => e.Tareas).ThenInclude(t => t.ArticuloInventario)
                 .Include(e => e.ConsumosExtras).ThenInclude(c => c.Servicio)
                 .Include(e => e.Staff).ThenInclude(s => s.Empleado)
-                .Include(e => e.Items)
+                .Include(e => e.Items).ThenInclude(i => i.Servicio)
+                .Include(e => e.Items).ThenInclude(i => i.Articulo)
                 .Include(e => e.Pagos)
                 .Include(e => e.ClientesResponsables)
                 .Include(e => e.Cumpleaneros).ThenInclude(c => c.Nino)
@@ -188,10 +194,7 @@ public class GetEventoOperativoQueryHandler : IRequestHandler<GetEventoOperativo
                 Estado = evento.Estado.ToString(),
                 NotasAdmin = evento.NotasAdmin ?? "",
                 Tematica = evento.Tematica,
-                ColorManteleria = evento.ColorManteleria,
-                SaborPastel = evento.SaborPastel,
                 NotasDecoracion = evento.NotasDecoracion,
-                Alergias = evento.Alergias,
                 LinkGaleriaFotos = evento.LinkGaleriaFotos,
                 ConsentimientoMarketing = evento.ConsentimientoMarketing,
                 FechaEntregaFotos = evento.FechaEntregaFotos,
@@ -204,7 +207,10 @@ public class GetEventoOperativoQueryHandler : IRequestHandler<GetEventoOperativo
                     Estado = t.Estado.ToString(),
                     AsignadoA = t.AsignadoA?.NombreCompleto,
                     ArticuloId = t.ArticuloInventarioId,
+                    EventoItemId = t.EventoItemId,
+                    TipoTarea = t.TipoTarea.ToString(),
                     CantidadRequerida = t.CantidadRequerida,
+                    StockActual = t.ArticuloInventario?.StockActual ?? 0,
                     StockDescontado = t.StockDescontado
                 }).ToList(),
                 Consumos = evento.ConsumosExtras.Select(c => new ConsumoExtraDto
@@ -221,13 +227,15 @@ public class GetEventoOperativoQueryHandler : IRequestHandler<GetEventoOperativo
                     Id = s.Id,
                     Nombre = s.Empleado.NombreCompleto,
                     Rol = s.RolEnEvento ?? "Apoyo",
-                    EsPagado = s.EsPagado
+                    EsPagado = s.EsPagado,
+                    FotoPerfilUrl = s.Empleado.FotoPerfilUrl
                 } : new StaffOperativoDto
                 {
                     Id = s.Id,
                     Nombre = "Sin Asignar",
                     Rol = s.RolEnEvento ?? "Apoyo",
-                    EsPagado = s.EsPagado
+                    EsPagado = s.EsPagado,
+                    FotoPerfilUrl = null
                 }).ToList(),
                 Items = evento.Items.Select(i => new ItemOperativoDto
                 {
@@ -235,7 +243,10 @@ public class GetEventoOperativoQueryHandler : IRequestHandler<GetEventoOperativo
                     Nombre = i.Nombre,
                     Cantidad = i.Cantidad,
                     EsIncluidoEnPaquete = i.EsIncluidoEnPaquete,
-                    Tipo = i.ArticuloId.HasValue ? "Articulo" : "Servicio"
+                    Tipo = i.ArticuloId.HasValue ? "Articulo" : "Servicio",
+                    RequiereTemporizador = i.Servicio?.RequiereTemporizador ?? false,
+                    DuracionMinutos = i.Servicio?.DuracionMinutos ?? 0,
+                    ImagenUrl = i.Servicio != null ? i.Servicio.ImagenUrl : (i.Articulo != null ? i.Articulo.ImagenUrl : null)
                 }).ToList(),
                 Pagos = evento.Pagos.Select(p => new PagoOperativoDto
                 {

@@ -8,6 +8,7 @@ export interface Empleado {
   username: string;
   rol: string;
   estado: string;
+  fotoPerfilUrl?: string;
 }
 
 export interface CreateEmpleadoCommand {
@@ -17,6 +18,7 @@ export interface CreateEmpleadoCommand {
   nombreCompleto: string;
   rol: 'Administrador' | 'Empleado';
   puesto?: string;
+  fotoPerfilUrl?: string;
 }
 
 export const empleadosService = {
@@ -30,7 +32,7 @@ export const empleadosService = {
     return response.data;
   },
 
-  updateEmpleado: async (id: number, command: Omit<CreateEmpleadoCommand, 'username' | 'email' | 'password'> & { empleadoId: number, activo: boolean }): Promise<boolean> => {
+  updateEmpleado: async (id: number, command: Omit<CreateEmpleadoCommand, 'username' | 'email' | 'password'> & { empleadoId: number, activo: boolean, fotoPerfilUrl?: string }): Promise<boolean> => {
     const response = await apiClient.put<boolean>(`/empleados/${id}`, command);
     return response.data;
   },

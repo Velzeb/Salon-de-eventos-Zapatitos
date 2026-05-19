@@ -14,11 +14,13 @@ public class VerifyPagoCommandHandler : IRequestHandler<VerifyPagoCommand, Resul
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly Common.Services.IEventoService _eventoService;
+    private readonly IMediator _mediator;
 
-    public VerifyPagoCommandHandler(IUnitOfWork unitOfWork, Common.Services.IEventoService eventoService)
+    public VerifyPagoCommandHandler(IUnitOfWork unitOfWork, Common.Services.IEventoService eventoService, IMediator mediator)
     {
         _unitOfWork = unitOfWork;
         _eventoService = eventoService;
+        _mediator = mediator;
     }
 
     public async Task<Result<long>> Handle(VerifyPagoCommand request, CancellationToken cancellationToken)
@@ -42,11 +44,22 @@ public class VerifyPagoCommandHandler : IRequestHandler<VerifyPagoCommand, Resul
                 if (evento.Estado == EstadoEvento.Provisional)
                 {
                     await _eventoService.ConfirmarEventoAsync(evento.Id, cancellationToken);
+                    await _mediator.Send(new Zapatitos.Application.Features.Operativo.Commands.GenerarTareasLogistica.GenerarTareasLogisticaCommand(evento.Id), cancellationToken);
                 }
                 else
                 {
                     _unitOfWork.Repository<Evento>().Update(evento);
                 }
+
+                // REGISTRAR MOVIMIENTO EN CAJA
+                await _unitOfWork.Repository<MovimientoCaja>().AddAsync(new MovimientoCaja
+                {
+                    Tipo = TipoTransaccion.Ingreso,
+                    Monto = pago.Monto,
+                    Concepto = $"Pago Verificado - Evento #{evento.Id}",
+                    ReferenciaId = pago.Id,
+                    Fecha = DateTime.UtcNow
+                });
             }
         }
         else

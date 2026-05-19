@@ -29,7 +29,7 @@ export interface EventoItemDto {
 
 export interface CreateEventoCommand {
   clienteIds: number[];
-  paqueteId: number;
+  paqueteId?: number | null;
   cumpleaneros: Array<{ ninoId: number; nombre?: string; edad: number }>;
   fechaEvento: string;
   horaInicio: string;
@@ -39,12 +39,18 @@ export interface CreateEventoCommand {
   precioTotal: number;
   comprobantePago?: string;
   origen?: number;
+  tematica?: string;
   items: EventoItemDto[];
 }
 
 export const eventosService = {
   getEventos: async (): Promise<Evento[]> => {
     const response = await apiClient.get<Evento[]>('/eventos');
+    return response.data;
+  },
+
+  getCalendarEvents: async (): Promise<any[]> => {
+    const response = await apiClient.get<any[]>('/eventos/calendario');
     return response.data;
   },
 

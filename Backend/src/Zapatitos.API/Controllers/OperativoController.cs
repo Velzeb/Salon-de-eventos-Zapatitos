@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 using System.Threading.Tasks;
 using Zapatitos.Application.Features.Operativo.Commands.AddConsumo;
 using Zapatitos.Application.Features.Operativo.Commands.CompleteTarea;
@@ -10,12 +11,13 @@ using Zapatitos.Application.Features.Operativo.Queries.GetEventoOperativo;
 using Zapatitos.Application.Features.Operativo.Commands.UpdatePostEvento;
 using Zapatitos.Application.Features.Operativo.Commands.UploadMultimedia;
 using Zapatitos.Application.Features.Operativo.Commands.FinalizarEvento;
+using Zapatitos.Application.Features.Operativo.Commands.GestionTareas;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 
 namespace Zapatitos.API.Controllers;
 
-[Authorize] // Requiere estar logueado
+[Authorize]
 [Route("api/[controller]")]
 public class OperativoController : ApiControllerBase
 {
@@ -27,6 +29,7 @@ public class OperativoController : ApiControllerBase
         if (!result.Succeeded) return BadRequest(result.Errors);
         return NoContent();
     }
+
     [HttpPost("{id:long}/finalizar")]
     [Authorize(Roles = "Administrador")]
     public async Task<ActionResult> FinalizarEvento(long id)
@@ -44,10 +47,18 @@ public class OperativoController : ApiControllerBase
 
         if (!result.Succeeded)
         {
-            return NotFound(new { 
-                Error = "EVENT_NOT_FOUND", 
-                Details = result.Errors,
-                IdBuscado = id 
+            if (result.Errors.Any(e => e.Contains("no existe") || e.Contains("not found")))
+            {
+                return NotFound(new { 
+                    Error = "EVENT_NOT_FOUND", 
+                    Details = result.Errors,
+                    IdBuscado = id 
+                });
+            }
+            
+            return StatusCode(500, new {
+                Error = "INTERNAL_SERVER_ERROR",
+                Details = result.Errors
             });
         }
 
@@ -55,14 +66,12 @@ public class OperativoController : ApiControllerBase
     }
 
     [HttpPost("consumo-extra")]
-    [Authorize(Roles = "Administrador,Empleado")] // Solo staff o admin
+    [Authorize(Roles = "Administrador,Empleado")]
     public async Task<ActionResult<long>> AddConsumo(AddConsumoExtraCommand command)
     {
         var result = await Mediator.Send(command);
-
         if (!result.Succeeded)
             return BadRequest(result.Errors);
-
         return Ok(result.Value);
     }
 
@@ -71,11 +80,45 @@ public class OperativoController : ApiControllerBase
     public async Task<ActionResult> CompleteTarea(long id)
     {
         var result = await Mediator.Send(new CompleteTareaCommand(id));
-
         if (!result.Succeeded)
             return BadRequest(result.Errors);
-
         return NoContent();
+    }
+
+    [HttpPost("tareas")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<ActionResult<long>> CreateTarea(CreateTareaCommand command)
+    {
+        var result = await Mediator.Send(command);
+        if (!result.Succeeded) return BadRequest(result.Errors);
+        return Ok(result.Value);
+    }
+
+    [HttpPut("tareas/{id:long}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<ActionResult> UpdateTarea(long id, [FromBody] UpdateTareaRequest request)
+    {
+        var result = await Mediator.Send(new UpdateTareaCommand(
+            id, request.NombreTarea, request.Descripcion, request.ArticuloInventarioId, request.CantidadRequerida));
+        if (!result.Succeeded) return BadRequest(result.Errors);
+        return NoContent();
+    }
+
+    [HttpDelete("tareas/{id:long}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<ActionResult> DeleteTarea(long id)
+    {
+        var result = await Mediator.Send(new DeleteTareaCommand(id));
+        if (!result.Succeeded) return BadRequest(result.Errors);
+        return NoContent();
+    }
+
+    public class UpdateTareaRequest
+    {
+        public string NombreTarea { get; set; } = null!;
+        public string? Descripcion { get; set; }
+        public long? ArticuloInventarioId { get; set; }
+        public int CantidadRequerida { get; set; }
     }
 
     public class UpdateNotasRequest
@@ -88,10 +131,8 @@ public class OperativoController : ApiControllerBase
     public async Task<ActionResult> UpdateNotas(long eventoId, [FromBody] UpdateNotasRequest request)
     {
         var result = await Mediator.Send(new Zapatitos.Application.Features.Operativo.Commands.UpdateNotasAdmin.UpdateNotasAdminCommand(eventoId, request.Notas));
-
         if (!result.Succeeded)
             return BadRequest(result.Errors);
-
         return NoContent();
     }
 

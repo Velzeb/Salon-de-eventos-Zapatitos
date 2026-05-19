@@ -3,6 +3,7 @@ import { Plus, RefreshCw, Users, Mail, Briefcase, Shield, X, UserPlus, Fingerpri
 import { empleadosService } from '../../services/empleadosService';
 import type { Empleado, CreateEmpleadoCommand } from '../../services/empleadosService';
 import { toast } from 'sonner';
+import ImageUpload from '../../components/common/ImageUpload';
 
 const EmpleadosPage = () => {
   const [empleados, setEmpleados] = useState<Empleado[]>([]);
@@ -17,7 +18,8 @@ const EmpleadosPage = () => {
     nombreCompleto: '',
     rol: 'Empleado',
     puesto: '',
-    activo: true
+    activo: true,
+    fotoPerfilUrl: ''
   });
   const [saving, setSaving] = useState(false);
 
@@ -47,7 +49,8 @@ const EmpleadosPage = () => {
       nombreCompleto: '',
       rol: 'Empleado',
       puesto: '',
-      activo: true
+      activo: true,
+      fotoPerfilUrl: ''
     });
     setIsModalOpen(true);
   };
@@ -62,7 +65,8 @@ const EmpleadosPage = () => {
       nombreCompleto: emp.nombreCompleto,
       rol: emp.rol as any,
       puesto: emp.puesto || '',
-      activo: emp.estado === 'Activo'
+      activo: emp.estado === 'Activo',
+      fotoPerfilUrl: emp.fotoPerfilUrl || ''
     });
     setIsModalOpen(true);
   };
@@ -95,7 +99,8 @@ const EmpleadosPage = () => {
           nombreCompleto: formData.nombreCompleto,
           puesto: formData.puesto,
           rol: formData.rol,
-          activo: formData.activo ?? true
+          activo: formData.activo ?? true,
+          fotoPerfilUrl: formData.fotoPerfilUrl
         });
         toast.success('Empleado actualizado correctamente');
       } else {
@@ -178,9 +183,13 @@ const EmpleadosPage = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-4">
                         <div className="relative">
-                          <div className="w-12 h-12 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-lg border border-indigo-100">
-                            {e.nombreCompleto.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                          </div>
+                          {e.fotoPerfilUrl ? (
+                            <img src={e.fotoPerfilUrl} alt={e.nombreCompleto} className="w-12 h-12 rounded-lg object-cover border border-slate-100" />
+                          ) : (
+                            <div className="w-12 h-12 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-lg border border-indigo-100">
+                              {e.nombreCompleto.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+                            </div>
+                          )}
                           <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white ${e.estado === 'Activo' ? 'bg-emerald-500' : 'bg-slate-300'}`} />
                         </div>
                         <div className="flex flex-col">
@@ -368,6 +377,16 @@ const EmpleadosPage = () => {
                       <option value="Empleado">Staff Estándar</option>
                     </select>
                   </div>
+                </div>
+
+                <div className="space-y-1.5 pt-2">
+                  <ImageUpload
+                    value={formData.fotoPerfilUrl}
+                    onChange={(url) => setFormData({ ...formData, fotoPerfilUrl: url })}
+                    folder="empleados"
+                    label="Fotografía del Empleado (Perfil)"
+                    accept="image/*"
+                  />
                 </div>
 
                 {isUpdateMode && (

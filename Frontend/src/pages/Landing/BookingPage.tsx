@@ -22,7 +22,7 @@ import { disponibilidadService, type AvailableSlot } from '../../services/dispon
 import { paquetesService, type Paquete, type Servicio } from '../../services/paquetesService';
 import { eventosService } from '../../services/eventosService';
 import { authService } from '../../services/authService';
-import './components/AvailabilityCalendar.css'; // Reutilizamos estilos base del calendario
+
 
 const BookingPage = () => {
   const [step, setStep] = useState(1);
@@ -737,3 +737,5 @@ const BookingPage = () => {
 };
 
 export default BookingPage;
+
+

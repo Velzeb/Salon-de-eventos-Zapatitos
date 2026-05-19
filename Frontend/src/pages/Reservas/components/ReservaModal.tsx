@@ -43,14 +43,14 @@ const ReservaModal = ({ isOpen, onClose, onSuccess, initialDate }: ReservaModalP
         {/* HEADER */}
         <div className="flex items-center justify-between p-10 bg-white border-b border-slate-100 sticky top-0 z-20">
           <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-primary rounded-[1.5rem] flex items-center justify-center text-white shadow-lg shadow-primary/20">
+            <div className="w-16 h-16 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
               <Calendar size={28} />
             </div>
             <div className="space-y-1">
-              <h2 className="text-3xl font-display font-black text-bg-dark uppercase tracking-tight italic leading-none">Nueva Reserva</h2>
+              <h2 className="text-2xl font-bold text-slate-900 italic leading-none">Nueva Reserva</h2>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{formData.fechaEvento || 'Configurando Detalles...'}</span>
+                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{formData.fechaEvento || 'Configurando Detalles...'}</span>
               </div>
             </div>
           </div>
@@ -65,7 +65,7 @@ const ReservaModal = ({ isOpen, onClose, onSuccess, initialDate }: ReservaModalP
         {/* CONTENT */}
         <div className="flex-1 overflow-y-auto p-10 space-y-12 custom-scrollbar scroll-smooth">
           <div className="space-y-12">
-            <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-500">
+            <div className="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-500">
               <StepClientInfo 
                 clienteIds={formData.clienteIds}
                 clientes={clientes}
@@ -79,7 +79,7 @@ const ReservaModal = ({ isOpen, onClose, onSuccess, initialDate }: ReservaModalP
               />
             </div>
 
-            <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-500">
+            <div className="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-500">
               <StepKidsSelection 
                 cumpleaneros={formData.cumpleaneros}
                 availableNinos={availableNinos}
@@ -92,7 +92,7 @@ const ReservaModal = ({ isOpen, onClose, onSuccess, initialDate }: ReservaModalP
               />
             </div>
 
-            <div className="bg-white p-10 rounded-[3rem] border border-slate-100 shadow-sm hover:shadow-md transition-all duration-500">
+            <div className="bg-white p-10 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-all duration-500">
               <StepEventDetails 
                 paqueteId={formData.paqueteId}
                 paquetes={paquetes}
@@ -104,6 +104,7 @@ const ReservaModal = ({ isOpen, onClose, onSuccess, initialDate }: ReservaModalP
                 horaFin={formData.horaFin}
                 cantidadNinosEstimada={formData.cantidadNinosEstimada}
                 notasAdmin={formData.notasAdmin}
+                tematica={formData.tematica}
                 availableSlots={availableSlots}
                 loadingSlots={loadingSlots}
                 errors={errors}
@@ -112,7 +113,7 @@ const ReservaModal = ({ isOpen, onClose, onSuccess, initialDate }: ReservaModalP
               />
             </div>
 
-            <div className="bg-bg-dark p-10 rounded-[3rem] shadow-2xl border border-slate-800">
+            <div className="bg-bg-dark p-10 rounded-3xl shadow-2xl border border-slate-800">
               <StepFinancials 
                 pagoInicial={formData.pagoInicial}
                 precioFinal={formData.precioFinal}
@@ -128,13 +129,13 @@ const ReservaModal = ({ isOpen, onClose, onSuccess, initialDate }: ReservaModalP
         <div className="p-10 bg-white border-t border-slate-100 shadow-[0_-20px_80px_-20px_rgba(0,0,0,0.1)] sticky bottom-0 z-20">
           <div className="flex items-center justify-between gap-10">
             <div className="flex flex-col">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Monto de Operación</span>
-              <span className="text-4xl font-black text-bg-dark tracking-tighter italic leading-none">${formData.precioFinal.toLocaleString()}</span>
+              <span className="text-xs font-bold text-slate-400  mb-1">Monto de Operación</span>
+              <span className="text-4xl font-bold text-bg-dark tracking-tighter italic leading-none">${formData.precioFinal.toLocaleString()}</span>
             </div>
             <div className="flex items-center gap-4 flex-1">
               <button 
                 onClick={onClose}
-                className="flex-1 py-5 rounded-2xl text-[10px] font-black text-slate-400 uppercase tracking-widest hover:bg-slate-50 hover:text-bg-dark transition-all"
+                className="flex-1 py-5 rounded-2xl text-xs font-semibold text-slate-500 uppercase tracking-wider hover:bg-slate-50 hover:text-bg-dark transition-all"
               >
                 Descartar
               </button>
@@ -148,7 +149,7 @@ const ReservaModal = ({ isOpen, onClose, onSuccess, initialDate }: ReservaModalP
                 ) : (
                   <>
                     <Check size={20} />
-                    <span className="font-black uppercase tracking-[0.2em] text-xs">Crear Reserva</span>
+                    <span className="font-bold  text-xs">Crear Reserva</span>
                   </>
                 )}
               </button>
@@ -161,3 +162,7 @@ const ReservaModal = ({ isOpen, onClose, onSuccess, initialDate }: ReservaModalP
 };
 
 export default ReservaModal;
+
+
+
+

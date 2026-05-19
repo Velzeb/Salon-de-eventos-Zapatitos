@@ -56,7 +56,7 @@ public class GetInvitacionQueryHandler : IRequestHandler<GetInvitacionQuery, Res
             Fecha = invitacion.Evento.FechaEvento,
             HoraInicio = invitacion.Evento.HoraInicio.ToString(@"hh\:mm"),
             HoraFin = invitacion.Evento.HoraFin.ToString(@"hh\:mm"),
-            Paquete = invitacion.Evento.Paquete.Nombre,
+            Paquete = invitacion.Evento.Paquete != null ? invitacion.Evento.Paquete.Nombre : "Solo salón",
             ConfigJson = invitacion.ConfigJson,
             Direccion = (await _unitOfWork.Repository<ConfiguracionWeb>().Query()
                 .FirstOrDefaultAsync(c => c.Clave == "direccion", cancellationToken))?.Valor ?? "",

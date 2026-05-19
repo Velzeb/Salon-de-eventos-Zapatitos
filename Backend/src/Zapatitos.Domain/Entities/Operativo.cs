@@ -25,9 +25,13 @@ public class TareaOperativa : BaseEntity
     public string NombreTarea { get; set; } = null!;
     public string? Descripcion { get; set; }
     public EstadoTarea Estado { get; set; } = EstadoTarea.Pendiente;
+    public TipoTareaOperativa TipoTarea { get; set; } = TipoTareaOperativa.Manual;
     
     public long? AsignadoAId { get; set; }
     public virtual Empleado? AsignadoA { get; set; }
+
+    public long? EventoItemId { get; set; }
+    public virtual EventoItem? EventoItem { get; set; }
     
     // === LOGÍSTICA DE INVENTARIO (Fase 6) ===
     public long? ArticuloInventarioId { get; set; }

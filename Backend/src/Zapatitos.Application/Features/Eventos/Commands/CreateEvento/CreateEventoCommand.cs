@@ -15,7 +15,7 @@ public record CreateEventoCommand : IRequest<Result<long>>
     public List<long> ClienteIds { get; init; } = new();
     public List<long> ServicioIds { get; init; } = new();
     public List<CumpleaneroDto> Cumpleaneros { get; init; } = new();
-    public long PaqueteId { get; init; }
+    public long? PaqueteId { get; init; }
     public DateTime FechaEvento { get; init; }
     public TimeSpan HoraInicio { get; init; }
     public TimeSpan HoraFin { get; init; }
@@ -23,6 +23,7 @@ public record CreateEventoCommand : IRequest<Result<long>>
     public decimal PagoInicial { get; init; }
     public string? ComprobantePago { get; init; } // Base64 o URL del recibo QR
     public decimal PrecioTotal { get; init; }
+    public string? Tematica { get; init; }
     public OrigenEvento Origen { get; set; } = OrigenEvento.Interno;
     public long? UsuarioId { get; set; }
     public List<EventoItemDto> Items { get; init; } = new();
@@ -49,17 +50,22 @@ public class EventoItemDto
 public class CreateEventoCommandHandler : IRequestHandler<CreateEventoCommand, Result<long>>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMediator _mediator;
 
-    public CreateEventoCommandHandler(IUnitOfWork unitOfWork)
+    public CreateEventoCommandHandler(IUnitOfWork unitOfWork, IMediator mediator)
     {
         _unitOfWork = unitOfWork;
+        _mediator = mediator;
     }
 
     public async Task<Result<long>> Handle(CreateEventoCommand request, CancellationToken cancellationToken)
     {
-        // 1. Validar si el paquete existe
-        var paquete = await _unitOfWork.Repository<Paquete>().GetByIdAsync(request.PaqueteId);
-        if (paquete == null) return Result<long>.Failure("El paquete seleccionado no existe.");
+        // 1. Validar si se eligió paquete. El salón también puede reservarse sin paquete.
+        if (request.PaqueteId.HasValue)
+        {
+            var paquete = await _unitOfWork.Repository<Paquete>().GetByIdAsync(request.PaqueteId.Value);
+            if (paquete == null) return Result<long>.Failure("El paquete seleccionado no existe.");
+        }
 
         var clientes = new List<Cliente>();
 
@@ -117,7 +123,8 @@ public class CreateEventoCommandHandler : IRequestHandler<CreateEventoCommand, R
             HoraInicio = request.HoraInicio,
             HoraFin = request.HoraFin,
             CantidadNinosEstimada = request.CantidadNinosEstimada,
-            Estado = EstadoEvento.Provisional,
+            Estado = request.Origen == OrigenEvento.Online ? EstadoEvento.Provisional : EstadoEvento.Confirmado,
+            Tematica = request.Tematica,
             PrecioTotal = precioTotal,
             SaldoPendiente = precioTotal - request.PagoInicial,
             ClientesResponsables = clientes,
@@ -156,7 +163,7 @@ public class CreateEventoCommandHandler : IRequestHandler<CreateEventoCommand, R
             nuevoEvento.Pagos.Add(new Pago
             {
                 Monto = request.PagoInicial,
-                Estado = !string.IsNullOrEmpty(request.ComprobantePago) ? EstadoPago.Pendiente : EstadoPago.Verificado,
+                Estado = request.Origen == OrigenEvento.Online && !string.IsNullOrEmpty(request.ComprobantePago) ? EstadoPago.Pendiente : EstadoPago.Verificado,
                 FechaPago = DateTime.UtcNow,
                 Referencia = "Pago inicial al crear reserva (QR/Transferencia)",
                 ComprobanteUrl = request.ComprobantePago
@@ -166,6 +173,13 @@ public class CreateEventoCommandHandler : IRequestHandler<CreateEventoCommand, R
         // 6. Persistir
         await _unitOfWork.Repository<Evento>().AddAsync(nuevoEvento);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if (nuevoEvento.Estado == EstadoEvento.Confirmado)
+        {
+            await _mediator.Send(
+                new Zapatitos.Application.Features.Operativo.Commands.GenerarTareasLogistica.GenerarTareasLogisticaCommand(nuevoEvento.Id),
+                cancellationToken);
+        }
 
         return Result<long>.Success(nuevoEvento.Id);
     }

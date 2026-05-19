@@ -55,18 +55,21 @@ public class EventoService : IEventoService
         }
 
         // 2. Auto-generación de Checklist Operativo
-        var tieneTareas = await _unitOfWork.Repository<TareaOperativa>().Query()
-            .AnyAsync(t => t.EventoId == evento.Id, cancellationToken);
+        var tieneTareasBase = await _unitOfWork.Repository<TareaOperativa>().Query()
+            .AnyAsync(t => t.EventoId == evento.Id 
+                && t.TipoTarea == TipoTareaOperativa.Manual 
+                && t.EventoItemId == null 
+                && t.ArticuloInventarioId == null, cancellationToken);
 
-        if (!tieneTareas)
+        if (!tieneTareasBase)
         {
             var tareasBase = new List<string> { 
-                "Limpieza Profunda de Salón", 
-                "Montaje de Mesas y Sillas", 
-                "Decoración de Mesa Principal", 
-                "Recepción y Verificación de Pastel",
-                "Prueba de Equipo de Sonido",
-                "Briefing con el Staff del Evento"
+                "Limpieza profunda del salón", 
+                "Montaje de mesas y sillas", 
+                "Decoración de mesa principal", 
+                "Recepción y verificación del pastel",
+                "Prueba de equipo de sonido",
+                "Revisión general con el personal"
             };
 
             foreach (var nombre in tareasBase)
@@ -75,7 +78,8 @@ public class EventoService : IEventoService
                 {
                     EventoId = evento.Id,
                     NombreTarea = nombre,
-                    Estado = EstadoTarea.Pendiente
+                    Estado = EstadoTarea.Pendiente,
+                    TipoTarea = TipoTareaOperativa.Manual
                 });
             }
         }

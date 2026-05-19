@@ -11,10 +11,7 @@ public record UpdateBriefingEventoCommand : IRequest<Result<bool>>
 {
     public long EventoId { get; init; }
     public string? Tematica { get; init; }
-    public string? ColorManteleria { get; init; }
-    public string? SaborPastel { get; init; }
     public string? NotasDecoracion { get; init; }
-    public string? Alergias { get; init; }
 }
 
 public class UpdateBriefingEventoCommandHandler : IRequestHandler<UpdateBriefingEventoCommand, Result<bool>>
@@ -35,10 +32,7 @@ public class UpdateBriefingEventoCommandHandler : IRequestHandler<UpdateBriefing
             return Result<bool>.Failure("Evento no encontrado.");
 
         evento.Tematica = request.Tematica;
-        evento.ColorManteleria = request.ColorManteleria;
-        evento.SaborPastel = request.SaborPastel;
         evento.NotasDecoracion = request.NotasDecoracion;
-        evento.Alergias = request.Alergias;
 
         repo.Update(evento);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

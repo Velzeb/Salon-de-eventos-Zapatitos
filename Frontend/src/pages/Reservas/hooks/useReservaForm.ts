@@ -34,10 +34,11 @@ export const useReservaForm = (isOpen: boolean, initialDate: Date | null | undef
     paqueteId: '',
     cumpleaneros: [{ ninoId: '', edad: '' }] as CumpleaneroEntry[],
     fechaEvento: '',
-    horaInicio: '14:00',
-    horaFin: '18:00',
+    horaInicio: '',
+    horaFin: '',
     cantidadNinosEstimada: '20',
     notasAdmin: '',
+    tematica: '',
     pagoInicial: 0,
     precioFinal: 0,
     isManualPrice: false
@@ -208,8 +209,9 @@ export const useReservaForm = (isOpen: boolean, initialDate: Date | null | undef
     const newErrors: Record<string, string> = {};
     if (formData.clienteIds.length === 0) newErrors.clienteIds = 'Debe seleccionar al menos un cliente.';
     if (formData.cumpleaneros.some(c => !c.ninoId)) newErrors.cumpleaneros = 'Debe seleccionar a los cumpleañeros.';
-    if (!formData.paqueteId) newErrors.paqueteId = 'Debe seleccionar un paquete.';
     if (!formData.fechaEvento) newErrors.fechaEvento = 'Debe seleccionar la fecha del evento.';
+    if (!formData.horaInicio || !formData.horaFin) newErrors.horario = 'Debe seleccionar un turno disponible.';
+    if (formData.pagoInicial > formData.precioFinal) newErrors.pagoInicial = 'El abono no puede ser mayor al precio final.';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -225,7 +227,7 @@ export const useReservaForm = (isOpen: boolean, initialDate: Date | null | undef
     try {
       const command: CreateEventoCommand = {
         clienteIds: formData.clienteIds,
-        paqueteId: parseInt(formData.paqueteId) || 0,
+        paqueteId: formData.paqueteId ? parseInt(formData.paqueteId) : null,
         cumpleaneros: formData.cumpleaneros
           .filter(c => c.ninoId && c.edad)
           .map(c => ({
@@ -238,6 +240,7 @@ export const useReservaForm = (isOpen: boolean, initialDate: Date | null | undef
         cantidadNinosEstimada: parseInt(formData.cantidadNinosEstimada) || 0,
         pagoInicial: formData.pagoInicial || 0,
         precioTotal: formData.precioFinal || 0,
+        tematica: formData.tematica || undefined,
         items: formData.items
       };
 
@@ -268,6 +271,7 @@ export const useReservaForm = (isOpen: boolean, initialDate: Date | null | undef
     reloadServicios: loadData,
     loading,
     errors,
+    setErrors,
     availableSlots,
     loadingSlots,
     recommendedPrice,

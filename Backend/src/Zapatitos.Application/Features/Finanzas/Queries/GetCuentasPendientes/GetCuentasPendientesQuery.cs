@@ -34,7 +34,7 @@ public class GetCuentasPendientesQueryHandler : IRequestHandler<GetCuentasPendie
                 e.Id,
                 e.FechaEvento.ToString("yyyy-MM-dd"),
                 e.SaldoPendiente,
-                e.Paquete.Nombre,
+                e.Paquete != null ? e.Paquete.Nombre : "Solo salón",
                 e.ClientesResponsables.Select(c => c.NombreCompleto).ToList()
             ))
             .ToListAsync(cancellationToken);

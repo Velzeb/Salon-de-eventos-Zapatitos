@@ -15,6 +15,9 @@ export interface Servicio {
   articuloNombre?: string;
   productoNombre?: string;
   proveedorNombre?: string;
+  requiereTemporizador: boolean;
+  duracionMinutos: number;
+  imagenUrl?: string;
 }
 
 export interface PaqueteArticulo {
@@ -42,6 +45,7 @@ export interface Paquete {
   duracionHoras: number;
   servicios: PaqueteServicio[];
   articulos: PaqueteArticulo[];
+  imagenUrl?: string;
 }
 
 export interface CreatePaqueteCommand {
@@ -50,6 +54,7 @@ export interface CreatePaqueteCommand {
   precioBase: number;
   descuento: number;
   servicios: { servicioId: number; cantidad: number }[];
+  imagenUrl?: string;
 }
 
 export interface CreateServicioCommand {
@@ -63,6 +68,9 @@ export interface CreateServicioCommand {
   articuloInventarioId?: number;
   productoProduccionId?: number;
   proveedorId?: number;
+  requiereTemporizador: boolean;
+  duracionMinutos: number;
+  imagenUrl?: string;
 }
 
 export const paquetesService = {
@@ -73,6 +81,11 @@ export const paquetesService = {
 
   getServicios: async (): Promise<Servicio[]> => {
     const response = await apiClient.get<Servicio[]>('/servicios');
+    return response.data;
+  },
+
+  getServiciosAdicionales: async (): Promise<Servicio[]> => {
+    const response = await apiClient.get<Servicio[]>('/paquetes/servicios-adicionales');
     return response.data;
   },
 

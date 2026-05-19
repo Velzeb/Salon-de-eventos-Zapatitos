@@ -22,7 +22,7 @@ public class EventoDetailAdminDto
     public string HoraInicio { get; set; } = null!;
     public string HoraFin { get; set; } = null!;
     public string Paquete { get; set; } = null!;
-    public long PaqueteId { get; set; }
+    public long? PaqueteId { get; set; }
     public decimal PrecioTotal { get; set; }
     public decimal SaldoPendiente { get; set; }
     public int CantidadNinosEstimada { get; set; }

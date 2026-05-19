@@ -15,9 +15,15 @@ public class Servicio : BaseEntity
     public decimal PrecioProveedor { get; set; }
     public bool EsExtra { get; set; } = true;
     public EstadoGeneral Estado { get; set; } = EstadoGeneral.Activo;
+    
+    // Controles de tiempo
+    public bool RequiereTemporizador { get; set; } = false;
+    public int DuracionMinutos { get; set; } = 0;
 
     // Tipo de servicio: qué lo respalda
     public TipoServicio Tipo { get; set; } = TipoServicio.ServicioTercero;
+
+    public string? ImagenUrl { get; set; }
 
     // Cantidad mínima requerida (ej: mínimo 50 sillas, mínimo 20 galletas)
     public int CantidadMinima { get; set; } = 1;
@@ -46,6 +52,7 @@ public class Paquete : BaseEntity
     public int CapacidadNinos { get; set; }
     public int DuracionHoras { get; set; }
     public EstadoGeneral Estado { get; set; } = EstadoGeneral.Activo;
+    public string? ImagenUrl { get; set; }
 
     public virtual ICollection<PaqueteServicio> Servicios { get; set; } = new List<PaqueteServicio>();
     public virtual ICollection<PaqueteArticulo> Articulos { get; set; } = new List<PaqueteArticulo>();
@@ -72,6 +79,7 @@ public class ArticuloInventario : BaseEntity
 
     public string Nombre { get; set; } = null!;
     public string? Descripcion { get; set; }
+    public string? ImagenUrl { get; set; }
 
     // Control de stock
     public int StockActual { get; set; }
@@ -108,6 +116,7 @@ public class ProductoProduccion : BaseEntity
     // Cuántas unidades produce un lote de esta receta
     public int CantidadProducida { get; set; } = 1;
     public string? UnidadMedida { get; set; } // "unidades", "porciones", "gramos"
+    public string? ImagenUrl { get; set; }
 
     public EstadoGeneral Estado { get; set; } = EstadoGeneral.Activo;
 

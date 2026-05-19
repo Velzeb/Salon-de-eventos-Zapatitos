@@ -30,7 +30,7 @@ public class FinalizarEventoCommandHandler : IRequestHandler<FinalizarEventoComm
         // Regla: No se puede cerrar si hay saldo pendiente (opcional, pero profesional)
         // En este caso permitiremos cerrarlo pero avisando en el front si hay saldo.
         
-        evento.Estado = EstadoEvento.PostFiesta;
+        evento.Estado = EstadoEvento.Finalizado;
         
         // Auditoría final: Marcar todas las tareas como completadas si no lo estaban? 
         // O mejor dejar que el admin las revise.

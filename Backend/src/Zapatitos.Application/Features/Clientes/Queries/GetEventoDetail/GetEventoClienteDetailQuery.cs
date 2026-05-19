@@ -30,10 +30,8 @@ public class EventoClienteDetailDto
     public bool YaCalificado { get; set; }
     public bool ConsentimientoMarketing { get; set; }
     public string? Tematica { get; set; }
-    public string? ColorManteleria { get; set; }
-    public string? SaborPastel { get; set; }
     public string? NotasDecoracion { get; set; }
-    public string? Alergias { get; set; }
+    public List<string> AlergiasCumpleaneros { get; set; } = new();
     public List<EventoItemClienteDto> Items { get; set; } = new();
     public List<string> FotosUrls { get; set; } = new();
     public List<MultimediaEventoDto> GaleriaMultimedia { get; set; } = new();
@@ -122,7 +120,7 @@ public class GetEventoClienteDetailQueryHandler : IRequestHandler<GetEventoClien
         {
             Id = evento.Id,
             NombreCumpleaneros = string.Join(", ", evento.Cumpleaneros.Select(c => c.Nino?.Nombre ?? "Cumpleañero")),
-            Paquete = evento.Paquete?.Nombre ?? "Paquete no especificado",
+            Paquete = evento.Paquete?.Nombre ?? "Solo salón",
             FechaEvento = evento.FechaEvento,
             HoraInicio = evento.HoraInicio.ToString(@"hh\:mm"),
             HoraFin = evento.HoraFin.ToString(@"hh\:mm"),
@@ -135,11 +133,13 @@ public class GetEventoClienteDetailQueryHandler : IRequestHandler<GetEventoClien
             YaCalificado = evento.Retroalimentacion != null,
             ConsentimientoMarketing = evento.ConsentimientoMarketing,
             Tematica = evento.Tematica,
-            ColorManteleria = evento.ColorManteleria,
-            SaborPastel = evento.SaborPastel,
             NotasDecoracion = evento.NotasDecoracion,
-            Alergias = evento.Alergias,
-            FotosUrls = evento.Fotos?.Where(f => f.VisibleParaCliente).Select(f => f.Url).ToList() ?? new List<string>(),
+            AlergiasCumpleaneros = evento.Cumpleaneros
+                .Select(c => c.Nino?.Alergias)
+                .Where(a => !string.IsNullOrEmpty(a))
+                .Select(a => a!)
+                .ToList(),
+            FotosUrls = evento.Fotos?.Where(f => f.VisibleParaCliente && !string.IsNullOrEmpty(f.Url)).Select(f => f.Url!).ToList() ?? new List<string>(),
             GaleriaMultimedia = evento.Multimedia?.OrderByDescending(m => m.FechaSubida)
                 .Select(m => new MultimediaEventoDto {
                     Id = m.Id,

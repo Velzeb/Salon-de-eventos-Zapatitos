@@ -5,12 +5,8 @@ import {
   Save, 
   Clock, 
   Copy, 
-  ChevronRight, 
   AlertTriangle,
-  History,
   Check,
-  LayoutGrid,
-  Calendar,
   Sun,
   Sunset,
   Moon,
@@ -137,7 +133,7 @@ const ConfiguracionHorarios: React.FC = () => {
     return (
       <div className="py-40 flex flex-col items-center justify-center space-y-6 bg-white rounded-2xl border border-slate-100">
         <div className="w-12 h-12 border-4 border-slate-100 border-t-slate-900 rounded-full animate-spin" />
-        <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Cargando Mapa de Tiempo...</p>
+        <p className="text-slate-400 font-bold text-xs ">Cargando Mapa de Tiempo...</p>
       </div>
     );
   }
@@ -153,7 +149,7 @@ const ConfiguracionHorarios: React.FC = () => {
             <Clock size={24} />
           </div>
           <div>
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">Agenda Maestra</h2>
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Agenda Maestra</h2>
             <p className="text-xs text-slate-500 font-bold uppercase tracking-wider flex items-center gap-2">
               {getDiaName(activeDay)} 
               <span className="w-1 h-1 bg-slate-300 rounded-full" /> 
@@ -181,7 +177,7 @@ const ConfiguracionHorarios: React.FC = () => {
           <button 
             onClick={handleSaveDay}
             disabled={saving || !hasChanges || conflicts.size > 0}
-            className={`px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-xl flex items-center gap-2 ${
+            className={`px-6 py-3 rounded-xl text-xs font-bold  transition-all shadow-xl flex items-center gap-2 ${
               hasChanges && conflicts.size === 0 ? 'bg-slate-900 text-white hover:scale-105 active:scale-95 shadow-slate-900/20' : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
             }`}
           >
@@ -193,7 +189,7 @@ const ConfiguracionHorarios: React.FC = () => {
       <div className="flex flex-1 overflow-hidden">
         {/* SIDEBAR: SELECTOR GRÁFICO */}
         <div className="w-64 border-r border-slate-100 p-6 space-y-2 bg-slate-50/20 overflow-y-auto shrink-0">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] px-2 mb-4">Selector de Día</p>
+          <p className="text-xs font-bold text-slate-400  px-2 mb-4">Selector de Día</p>
           {[1, 2, 3, 4, 5, 6, 0].map((id) => {
             const name = getDiaName(id);
             const count = configs.filter(c => c.diaSemana === id).length;
@@ -209,7 +205,7 @@ const ConfiguracionHorarios: React.FC = () => {
               >
                 <span className="font-bold text-sm">{name}</span>
                 {count > 0 && (
-                  <div className={`w-6 h-6 flex items-center justify-center rounded-lg text-[10px] font-black ${isActive ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-400'}`}>
+                  <div className={`w-6 h-6 flex items-center justify-center rounded-lg text-xs font-bold ${isActive ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-400'}`}>
                     {count}
                   </div>
                 )}
@@ -225,32 +221,32 @@ const ConfiguracionHorarios: React.FC = () => {
             {/* PANEL DE ACCIONES RÁPIDAS (PRESETS) */}
             <div className="bg-slate-50/50 rounded-3xl p-6 border border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
-                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-1">Añadir con un clic</h3>
+                <h3 className="text-sm font-bold text-slate-900  mb-1">Añadir con un clic</h3>
                 <p className="text-xs text-slate-400 font-medium tracking-tight">Usa presets para configurar turnos estándar rápidamente</p>
               </div>
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => handleAddShift(activeDay, { start: '09:00:00', end: '13:00:00', name: 'Turno Mañana' })}
-                  className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center gap-2 shadow-sm"
+                  className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center gap-2 shadow-sm"
                 >
                   <Sun size={14} /> Mañana
                 </button>
                 <button 
                   onClick={() => handleAddShift(activeDay, { start: '14:00:00', end: '18:00:00', name: 'Turno Tarde' })}
-                  className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center gap-2 shadow-sm"
+                  className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center gap-2 shadow-sm"
                 >
                   <Sunset size={14} /> Tarde
                 </button>
                 <button 
                   onClick={() => handleAddShift(activeDay, { start: '18:30:00', end: '22:30:00', name: 'Turno Noche' })}
-                  className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-[10px] font-black text-slate-600 hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center gap-2 shadow-sm"
+                  className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:border-indigo-500 hover:text-indigo-600 transition-all flex items-center gap-2 shadow-sm"
                 >
                   <Moon size={14} /> Noche
                 </button>
                 <div className="w-px h-8 bg-slate-200 mx-2" />
                 <button 
                   onClick={() => handleAddShift(activeDay)}
-                  className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-[10px] font-black hover:bg-indigo-600 transition-all flex items-center gap-2 shadow-lg shadow-slate-900/10"
+                  className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-indigo-600 transition-all flex items-center gap-2 shadow-lg shadow-slate-900/10"
                 >
                   <Plus size={16} /> Personalizado
                 </button>
@@ -282,7 +278,7 @@ const ConfiguracionHorarios: React.FC = () => {
                     >
                       {/* MAPA VISUAL DE TIEMPO (AHORA INTERACTIVO) */}
                       <div className="mb-8 space-y-3">
-                        <div className="flex items-center justify-between text-[9px] font-black text-slate-400 uppercase tracking-widest px-1">
+                        <div className="flex items-center justify-between text-xs font-bold text-slate-400  px-1">
                           <span>00:00</span>
                           <span>06:00</span>
                           <span>12:00</span>
@@ -309,47 +305,47 @@ const ConfiguracionHorarios: React.FC = () => {
                             <input 
                               value={config.nombreBloque}
                               onChange={e => handleUpdateField(config.id, 'nombreBloque', e.target.value)}
-                              className="flex-1 bg-transparent text-2xl font-black text-slate-900 outline-none border-b-2 border-transparent focus:border-indigo-500 transition-all placeholder:text-slate-200 uppercase tracking-tighter"
+                              className="flex-1 bg-transparent text-2xl font-bold text-slate-900 outline-none border-b-2 border-transparent focus:border-indigo-500 transition-all placeholder:text-slate-200 uppercase tracking-tighter"
                               placeholder="NOMBRE DEL BLOQUE"
                             />
                             {isConflict && (
                               <div className="flex items-center gap-2 px-4 py-2 bg-rose-500 text-white rounded-xl animate-pulse">
                                 <AlertTriangle size={14} />
-                                <span className="text-[10px] font-black uppercase tracking-tight">Solapado</span>
+                                <span className="text-xs font-bold uppercase tracking-tight">Solapado</span>
                               </div>
                             )}
                           </div>
                           
                           <div className="flex flex-wrap items-center gap-10">
                             <div className="space-y-3">
-                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Hora Inicio</label>
+                              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">Hora Inicio</label>
                               <div className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-2xl border border-slate-200 focus-within:border-indigo-500 transition-all shadow-sm">
                                 <Clock size={16} className="text-slate-400" />
                                 <input 
                                   type="time" 
                                   value={config.horaInicio.substring(0, 5)} 
                                   onChange={e => handleUpdateField(config.id, 'horaInicio', e.target.value + ':00')}
-                                  className="bg-transparent text-sm font-black text-slate-700 outline-none w-[70px]"
+                                  className="bg-transparent text-sm font-bold text-slate-700 outline-none w-[70px]"
                                 />
                               </div>
                             </div>
 
                             <div className="space-y-3">
-                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Hora Fin</label>
+                              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">Hora Fin</label>
                               <div className="flex items-center gap-3 bg-slate-50 px-4 py-3 rounded-2xl border border-slate-200 focus-within:border-indigo-500 transition-all shadow-sm">
                                 <Clock size={16} className="text-slate-400" />
                                 <input 
                                   type="time" 
                                   value={config.horaFin.substring(0, 5)} 
                                   onChange={e => handleUpdateField(config.id, 'horaFin', e.target.value + ':00')}
-                                  className="bg-transparent text-sm font-black text-slate-700 outline-none w-[70px]"
+                                  className="bg-transparent text-sm font-bold text-slate-700 outline-none w-[70px]"
                                 />
                               </div>
                             </div>
 
                             <div className="space-y-3">
-                              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Duración Total</label>
-                              <div className="flex items-center gap-3 px-6 py-3 bg-indigo-50 text-indigo-600 rounded-2xl border border-indigo-100 font-black text-sm">
+                              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">Duración Total</label>
+                              <div className="flex items-center gap-3 px-6 py-3 bg-indigo-50 text-indigo-600 rounded-2xl border border-indigo-100 font-bold text-sm">
                                 <Timer size={16} />
                                 {duration}
                               </div>
@@ -360,7 +356,7 @@ const ConfiguracionHorarios: React.FC = () => {
                         <div className="flex items-center gap-4 pb-1">
                           <button
                             onClick={() => handleUpdateField(config.id, 'activo', !config.activo)}
-                            className={`px-6 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all border-2 shadow-sm ${
+                            className={`px-6 py-3 rounded-2xl text-xs font-semibold uppercase tracking-wider transition-all border-2 shadow-sm ${
                               config.activo ? 'bg-emerald-50 text-emerald-600 border-emerald-100 hover:bg-emerald-100' : 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-200'
                             }`}
                           >
@@ -382,23 +378,23 @@ const ConfiguracionHorarios: React.FC = () => {
             </div>
 
             {/* FOOTER DE ESTADO OPERATIVO */}
-            <div className="p-10 bg-slate-900 rounded-[3rem] text-white flex flex-col md:flex-row items-center justify-between gap-10 overflow-hidden relative shadow-2xl">
+            <div className="p-10 bg-slate-900 rounded-3xl text-white flex flex-col md:flex-row items-center justify-between gap-10 overflow-hidden relative shadow-2xl">
               <div className="absolute top-0 right-0 w-80 h-80 bg-indigo-500/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
               <div className="flex items-center gap-6 relative z-10">
                 <div className="w-16 h-16 bg-white/10 backdrop-blur-xl rounded-3xl flex items-center justify-center text-indigo-400 border border-white/10">
                   <Check size={32} />
                 </div>
                 <div>
-                  <h4 className="text-xl font-black tracking-tight uppercase italic">Configuración Validada</h4>
-                  <p className="text-[11px] text-slate-400 font-bold uppercase tracking-[0.2em] mt-1">
+                  <h4 className="text-xl font-bold tracking-tight uppercase italic">Configuración Validada</h4>
+                  <p className="text-xs text-slate-400 font-bold  mt-1">
                     {activeDayConfigs.filter(c => c.activo).length} Bloques activos para este día
                   </p>
                 </div>
               </div>
               <div className="flex items-center gap-12 relative z-10">
                 <div className="text-center">
-                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">Estado General</p>
-                  <p className={`text-sm font-black uppercase px-4 py-1.5 rounded-full ${conflicts.size > 0 ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}`}>
+                  <p className="text-xs font-bold text-slate-500  mb-2">Estado General</p>
+                  <p className={`text-sm font-bold uppercase px-4 py-1.5 rounded-full ${conflicts.size > 0 ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}`}>
                     {conflicts.size > 0 ? 'Conflictos Detectados' : 'Optimizado'}
                   </p>
                 </div>
@@ -412,3 +408,7 @@ const ConfiguracionHorarios: React.FC = () => {
 };
 
 export default ConfiguracionHorarios;
+
+
+
+

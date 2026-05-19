@@ -15,6 +15,7 @@ public record UpdateStaffCommand : IRequest<Result<bool>>
     public string? Puesto { get; init; }
     public string Rol { get; init; } = null!; // "Administrador" o "Empleado"
     public bool Activo { get; init; }
+    public string? FotoPerfilUrl { get; init; }
 }
 
 public class UpdateStaffCommandHandler : IRequestHandler<UpdateStaffCommand, Result<bool>>
@@ -37,6 +38,7 @@ public class UpdateStaffCommandHandler : IRequestHandler<UpdateStaffCommand, Res
         // Actualizar datos de empleado
         empleado.NombreCompleto = request.NombreCompleto;
         empleado.Puesto = request.Puesto;
+        empleado.FotoPerfilUrl = request.FotoPerfilUrl;
 
         // Actualizar estado del usuario
         usuario.Activo = request.Activo;
