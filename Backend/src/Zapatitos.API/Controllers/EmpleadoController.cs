@@ -85,6 +85,15 @@ public class EmpleadoController : ApiControllerBase
         return Ok(result.Value);
     }
 
+    [HttpGet("historial")]
+    public async Task<ActionResult<IEnumerable<EmpleadoHistorialDto>>> GetHistorial()
+    {
+        if (!TryGetUsuarioId(out var usuarioId)) return Unauthorized();
+        var result = await Mediator.Send(new GetEmpleadoHistorialQuery(usuarioId));
+        if (!result.Succeeded) return NotFound(result.Errors);
+        return Ok(result.Value);
+    }
+
     private bool TryGetUsuarioId(out long usuarioId)
     {
         var sub = User.FindFirstValue("sub") ?? User.FindFirstValue(ClaimTypes.NameIdentifier);

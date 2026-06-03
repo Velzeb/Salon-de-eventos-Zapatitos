@@ -34,6 +34,7 @@ public class PagoNomina : BaseEntity
     public decimal Monto { get; set; }
     public DateTime FechaPago { get; set; }
     public string? Periodo { get; set; } // Ej: "Abril 2026" o "Evento #123"
+    public string? ComprobanteUrl { get; set; }
 }
 
 public class MovimientoCaja : BaseEntity

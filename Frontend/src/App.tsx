@@ -1,35 +1,43 @@
+import { lazy, Suspense, type ReactNode } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './pages/Login/LoginPage';
-import DashboardPage from './pages/Dashboard/DashboardPage';
-import CMSPage from './pages/CMS/CMSPage';
-import ReservasPage from './pages/Reservas/ReservasPage';
-import ReservaNuevaPage from './pages/Reservas/ReservaNuevaPage';
-import InventarioPage from './pages/Inventario/InventarioPage';
-import PaquetesPage from './pages/Paquetes/PaquetesPage';
-import EmpleadosPage from './pages/Empleados/EmpleadosPage';
-import FinanzasPage from './pages/Finanzas/FinanzasPage';
-import NominasPage from './pages/Finanzas/NominasPage';
-import OperativoPage from './pages/Operativo/OperativoPage';
-import ServiciosPage from './pages/Servicios/ServiciosPage';
-import ProduccionPage from './pages/Produccion/ProduccionPage';
-import ProveedoresPage from './pages/Proveedores/ProveedoresPage';
-import ClientesPage from './pages/Clientes/ClientesPage';
-import DetalleOperativoPage from './pages/Operativo/DetalleOperativoPage';
-import LandingPage from './pages/Landing/LandingPage';
-import BookingPage from './pages/Landing/BookingPage';
-import InvitacionPublicaPage from './pages/Landing/InvitacionPublicaPage';
-import ClienteLoginPage from './pages/Cliente/ClienteLoginPage';
-import ClienteDashboardPage from './pages/Cliente/ClienteDashboardPage';
-import EventoClienteDetailPage from './pages/Cliente/EventoClienteDetailPage';
-import ClientePerfilPage from './pages/Cliente/ClientePerfilPage';
-import AdminLayout from './components/layout/AdminLayout';
-import ClientLayout from './components/layout/ClientLayout';
-import EmployeeLayout from './components/layout/EmployeeLayout';
-import EmpleadoJornadaPage from './pages/Empleado/EmpleadoJornadaPage';
-import EmpleadoEventosPage from './pages/Empleado/EmpleadoEventosPage';
-import EmpleadoEventoDetailPage from './pages/Empleado/EmpleadoEventoDetailPage';
 import { authService } from './services/authService';
 import Toaster from './components/common/Toaster';
+
+const LoginPage = lazy(() => import('./pages/Login/LoginPage'));
+const DashboardPage = lazy(() => import('./pages/Dashboard/DashboardPage'));
+const CMSPage = lazy(() => import('./pages/CMS/CMSPage'));
+const ReservasPage = lazy(() => import('./pages/Reservas/ReservasPage'));
+const ReservaNuevaPage = lazy(() => import('./pages/Reservas/ReservaNuevaPage'));
+const InventarioPage = lazy(() => import('./pages/Inventario/InventarioPage'));
+const PaquetesPage = lazy(() => import('./pages/Paquetes/PaquetesPage'));
+const EmpleadosPage = lazy(() => import('./pages/Empleados/EmpleadosPage'));
+const FinanzasPage = lazy(() => import('./pages/Finanzas/FinanzasPage'));
+const NominasPage = lazy(() => import('./pages/Finanzas/NominasPage'));
+const OperativoPage = lazy(() => import('./pages/Operativo/OperativoPage'));
+const ServiciosPage = lazy(() => import('./pages/Servicios/ServiciosPage'));
+const ProduccionPage = lazy(() => import('./pages/Produccion/ProduccionPage'));
+const ProveedoresPage = lazy(() => import('./pages/Proveedores/ProveedoresPage'));
+const ClientesPage = lazy(() => import('./pages/Clientes/ClientesPage'));
+const DetalleOperativoPage = lazy(() => import('./pages/Operativo/DetalleOperativoPage'));
+const TareasPlantillaPage = lazy(() => import('./pages/Operativo/TareasPlantillaPage'));
+const LandingPage = lazy(() => import('./pages/Landing/LandingPage'));
+const BookingPage = lazy(() => import('./pages/Landing/BookingPage'));
+const InvitacionPublicaPage = lazy(() => import('./pages/Landing/InvitacionPublicaPage'));
+const ClienteLoginPage = lazy(() => import('./pages/Cliente/ClienteLoginPage'));
+const ServiciosPaquetesPage = lazy(() => import('./pages/Landing/ServiciosPaquetesPage'));
+const SobreNosotrosPage = lazy(() => import('./pages/Landing/SobreNosotrosPage'));
+const ContactoPage = lazy(() => import('./pages/Landing/ContactoPage'));
+const PublicLayout = lazy(() => import('./components/layout/PublicLayout'));
+const ClienteDashboardPage = lazy(() => import('./pages/Cliente/ClienteDashboardPage'));
+const EventoClienteDetailPage = lazy(() => import('./pages/Cliente/EventoClienteDetailPage'));
+const ClientePerfilPage = lazy(() => import('./pages/Cliente/ClientePerfilPage'));
+const AdminLayout = lazy(() => import('./components/layout/AdminLayout'));
+const ClientLayout = lazy(() => import('./components/layout/ClientLayout'));
+const EmployeeLayout = lazy(() => import('./components/layout/EmployeeLayout'));
+const EmpleadoJornadaPage = lazy(() => import('./pages/Empleado/EmpleadoJornadaPage'));
+const EmpleadoEventosPage = lazy(() => import('./pages/Empleado/EmpleadoEventosPage'));
+const EmpleadoEventoDetailPage = lazy(() => import('./pages/Empleado/EmpleadoEventoDetailPage'));
+const MiHistorialPagosPage = lazy(() => import('./pages/Empleado/MiHistorialPagosPage'));
 
 // Componente para rutas protegidas
 const ProtectedRoute = ({
@@ -37,7 +45,7 @@ const ProtectedRoute = ({
   roles,
   redirectTo = '/login'
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   roles?: string[];
   redirectTo?: string;
 }) => {
@@ -49,6 +57,12 @@ const ProtectedRoute = ({
   }
   return <>{children}</>;
 };
+
+const RouteFallback = () => (
+  <div className="min-h-screen flex items-center justify-center bg-bg-main">
+    <div className="h-10 w-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+  </div>
+);
 
 // Componente para redirección del Index de Admin según rol
 const AdminIndexRedirect = () => {
@@ -62,8 +76,16 @@ function App() {
   return (
     <Router>
       <Toaster />
+      <Suspense fallback={<RouteFallback />}>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        {/* Rutas Públicas con Header y Footer Unificados */}
+        <Route element={<PublicLayout />}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/servicios-y-paquetes" element={<ServiciosPaquetesPage />} />
+          <Route path="/sobre-nosotros" element={<SobreNosotrosPage />} />
+          <Route path="/contacto" element={<ContactoPage />} />
+        </Route>
+        
         <Route path="/reservar" element={<BookingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/cliente/login" element={<ClienteLoginPage />} />
@@ -92,6 +114,7 @@ function App() {
           <Route path="empleados" element={<ProtectedRoute roles={['Administrador']} redirectTo="/admin/operativo"><EmpleadosPage /></ProtectedRoute>} />
           <Route path="finanzas" element={<ProtectedRoute roles={['Administrador']} redirectTo="/admin/operativo"><FinanzasPage /></ProtectedRoute>} />
           <Route path="nominas" element={<ProtectedRoute roles={['Administrador']} redirectTo="/admin/operativo"><NominasPage /></ProtectedRoute>} />
+          <Route path="tareas-generales" element={<ProtectedRoute roles={['Administrador']} redirectTo="/admin/operativo"><TareasPlantillaPage /></ProtectedRoute>} />
           
           {/* Rutas para Empleados y Administradores */}
           <Route path="operativo" element={<OperativoPage />} />
@@ -111,6 +134,7 @@ function App() {
           <Route path="jornada" element={<EmpleadoJornadaPage />} />
           <Route path="eventos" element={<EmpleadoEventosPage />} />
           <Route path="eventos/:id" element={<EmpleadoEventoDetailPage />} />
+          <Route path="pagos" element={<MiHistorialPagosPage />} />
         </Route>
 
         <Route
@@ -130,6 +154,7 @@ function App() {
         {/* Redirección por defecto */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </Suspense>
     </Router>
   );
 }

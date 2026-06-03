@@ -13,6 +13,7 @@ using Zapatitos.Application.Features.Finanzas.Queries.GetCalculoNomina;
 using Zapatitos.Application.Features.Finanzas.Queries.GetReporteRentabilidad;
 using Zapatitos.Application.Features.Finanzas.Commands.AddPagoNomina;
 using Zapatitos.Application.Features.Finanzas.Commands.VerifyPago;
+using Zapatitos.Application.Features.Finanzas.Queries.GetEmpleadoNominas;
 
 namespace Zapatitos.API.Controllers;
 
@@ -95,6 +96,14 @@ public class FinanzasController : ApiControllerBase
     public async Task<ActionResult<long>> PagarNomina(AddPagoNominaCommand command)
     {
         var result = await Mediator.Send(command);
+        if (!result.Succeeded) return BadRequest(result.Errors);
+        return Ok(result.Value);
+    }
+
+    [HttpGet("nominas/historial/{empleadoId}")]
+    public async Task<ActionResult<IEnumerable<EmpleadoNominaDto>>> GetEmpleadoNominas(long empleadoId)
+    {
+        var result = await Mediator.Send(new GetEmpleadoNominasQuery(empleadoId));
         if (!result.Succeeded) return BadRequest(result.Errors);
         return Ok(result.Value);
     }

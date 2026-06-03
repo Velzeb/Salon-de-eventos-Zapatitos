@@ -24,6 +24,7 @@ public record CreateEventoCommand : IRequest<Result<long>>
     public string? ComprobantePago { get; init; } // Base64 o URL del recibo QR
     public decimal PrecioTotal { get; init; }
     public string? Tematica { get; init; }
+    public string? NotasAdmin { get; init; }
     public OrigenEvento Origen { get; set; } = OrigenEvento.Interno;
     public long? UsuarioId { get; set; }
     public List<EventoItemDto> Items { get; init; } = new();
@@ -60,7 +61,18 @@ public class CreateEventoCommandHandler : IRequestHandler<CreateEventoCommand, R
 
     public async Task<Result<long>> Handle(CreateEventoCommand request, CancellationToken cancellationToken)
     {
-        // 1. Validar si se eligió paquete. El salón también puede reservarse sin paquete.
+        // 1. Validar Anti-Overbooking (Evitar traslape de fiestas)
+        var traslape = await _unitOfWork.Repository<Evento>().Query()
+            .AnyAsync(e => e.FechaEvento.Date == request.FechaEvento.Date 
+                        && e.Estado != EstadoEvento.Cancelado 
+                        && e.Estado != EstadoEvento.Terminado
+                        && e.HoraInicio < request.HoraFin 
+                        && e.HoraFin > request.HoraInicio, cancellationToken);
+                        
+        if (traslape) 
+            return Result<long>.Failure("Conflicto de Horario: Ya existe un evento programado que se empalma con este horario en la misma fecha.");
+
+        // 2. Validar si se eligió paquete. El salón también puede reservarse sin paquete.
         if (request.PaqueteId.HasValue)
         {
             var paquete = await _unitOfWork.Repository<Paquete>().GetByIdAsync(request.PaqueteId.Value);
@@ -125,6 +137,7 @@ public class CreateEventoCommandHandler : IRequestHandler<CreateEventoCommand, R
             CantidadNinosEstimada = request.CantidadNinosEstimada,
             Estado = request.Origen == OrigenEvento.Online ? EstadoEvento.Provisional : EstadoEvento.Confirmado,
             Tematica = request.Tematica,
+            NotasAdmin = request.NotasAdmin,
             PrecioTotal = precioTotal,
             SaldoPendiente = precioTotal - request.PagoInicial,
             ClientesResponsables = clientes,

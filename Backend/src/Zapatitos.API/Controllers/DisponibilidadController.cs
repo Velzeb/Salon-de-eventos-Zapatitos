@@ -147,4 +147,62 @@ public class DisponibilidadController : ControllerBase
 
         return Ok(results);
     }
+
+    [HttpGet("month-available")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetMonthAvailable([FromQuery] int year, [FromQuery] int month)
+    {
+        var configs = await _context.DisponibilidadConfigs
+            .Where(c => c.Activo && c.EliminadoEn == null)
+            .ToListAsync();
+
+        var startDate = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
+        var endDate = new DateTime(year, month, DateTime.DaysInMonth(year, month), 23, 59, 59, DateTimeKind.Utc);
+
+        var events = await _context.Eventos
+            .Where(e => e.FechaEvento >= startDate.Date && e.FechaEvento <= endDate.Date && e.Estado != EstadoEvento.Cancelado && e.EliminadoEn == null)
+            .ToListAsync();
+
+        int daysInMonth = DateTime.DaysInMonth(year, month);
+        var dayStatuses = new List<object>();
+
+        for (int day = 1; day <= daysInMonth; day++)
+        {
+            var date = new DateTime(year, month, day, 0, 0, 0, DateTimeKind.Utc);
+            int dayOfWeek = (int)date.DayOfWeek;
+
+            var dayConfigs = configs.Where(c => c.DiaSemana == dayOfWeek).ToList();
+            if (!dayConfigs.Any())
+            {
+                dayStatuses.Add(new { Day = day, Status = "closed", SlotsCount = 0, AvailableCount = 0 });
+                continue;
+            }
+
+            var dayEvents = events.Where(e => e.FechaEvento.Date == date.Date).ToList();
+
+            int totalSlots = dayConfigs.Count;
+            int availableSlots = 0;
+
+            foreach (var c in dayConfigs)
+            {
+                bool isAvailable = !dayEvents.Any(e => 
+                    (e.HoraInicio < c.HoraFin && e.HoraFin > c.HoraInicio));
+                if (isAvailable) availableSlots++;
+            }
+
+            string status = "free";
+            if (availableSlots == 0) status = "full";
+            else if (availableSlots < totalSlots) status = "partial";
+
+            dayStatuses.Add(new
+            {
+                Day = day,
+                Status = status,
+                SlotsCount = totalSlots,
+                AvailableCount = availableSlots
+            });
+        }
+
+        return Ok(dayStatuses);
+    }
 }

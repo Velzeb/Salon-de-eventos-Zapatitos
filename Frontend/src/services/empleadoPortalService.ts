@@ -73,5 +73,24 @@ export const empleadoPortalService = {
   addConsumo: async (command: { eventoId: number; servicioId: number; cantidad: number }): Promise<number> => {
     const response = await apiClient.post<number>('/empleado/consumo-extra', command);
     return response.data;
+  },
+
+  getHistorial: async (): Promise<EmpleadoHistorial[]> => {
+    const response = await apiClient.get<EmpleadoHistorial[]>('/empleado/historial');
+    return response.data;
   }
 };
+
+export interface EmpleadoHistorial {
+  eventoId: number;
+  paqueteNombre: string;
+  fechaEvento: string;
+  rolEnEvento?: string;
+  estadoEvento: string;
+  montoAPagar: number;
+  esPagado: boolean;
+  pagoNominaId?: number;
+  fechaPago?: string;
+  comprobanteUrl?: string;
+  periodoPago?: string;
+}

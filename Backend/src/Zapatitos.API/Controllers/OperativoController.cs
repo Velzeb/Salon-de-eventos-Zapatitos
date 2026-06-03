@@ -12,6 +12,7 @@ using Zapatitos.Application.Features.Operativo.Commands.UpdatePostEvento;
 using Zapatitos.Application.Features.Operativo.Commands.UploadMultimedia;
 using Zapatitos.Application.Features.Operativo.Commands.FinalizarEvento;
 using Zapatitos.Application.Features.Operativo.Commands.GestionTareas;
+using Zapatitos.Application.Features.Operativo.Commands.GestionPlantillas;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 
@@ -145,6 +146,15 @@ public class OperativoController : ApiControllerBase
         return Ok(result.Value);
     }
 
+    [HttpDelete("staff/{id:long}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<ActionResult> RemoveStaff(long id)
+    {
+        var result = await Mediator.Send(new Zapatitos.Application.Features.Operativo.Commands.RemoveStaff.RemoveStaffFromEventoCommand(id));
+        if (!result.Succeeded) return BadRequest(result.Errors);
+        return NoContent();
+    }
+
     [HttpPost("assign-tarea")]
     [Authorize(Roles = "Administrador")]
     public async Task<ActionResult> AssignTarea(Zapatitos.Application.Features.Operativo.Commands.AssignTarea.AssignTareaCommand command)
@@ -215,11 +225,78 @@ public class OperativoController : ApiControllerBase
         return Ok(urls);
     }
 
-    [HttpDelete("{eventoId}/multimedia/{multimediaId}")]
+    [HttpPost("{eventoId}/items")]
     [Authorize(Roles = "Administrador")]
-    public async Task<ActionResult> DeleteMultimedia(long eventoId, long multimediaId)
+    public async Task<ActionResult<long>> AddServicio(long eventoId, [FromBody] AddServicioRequest request)
     {
-        var result = await Mediator.Send(new Zapatitos.Application.Features.Operativo.Commands.DeleteMultimedia.DeleteMultimediaCommand(multimediaId));
+        var result = await Mediator.Send(new Zapatitos.Application.Features.Operativo.Commands.GestionItems.AddServicioToEventoCommand(
+            eventoId, request.ServicioId, request.Cantidad));
+        if (!result.Succeeded) return BadRequest(result.Errors);
+        return Ok(result.Value);
+    }
+
+    [HttpDelete("{eventoId}/items/{itemId}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<ActionResult> RemoveItem(long eventoId, long itemId)
+    {
+        var result = await Mediator.Send(new Zapatitos.Application.Features.Operativo.Commands.GestionItems.RemoveItemFromEventoCommand(
+            eventoId, itemId));
+        if (!result.Succeeded) return BadRequest(result.Errors);
+        return NoContent();
+    }
+
+    public class AddServicioRequest
+    {
+        public long ServicioId { get; set; }
+        public int Cantidad { get; set; }
+    }
+
+    // ──────────────────────────────────────────────────────────────────
+    //  PLANTILLAS DE TAREAS GENERALES
+    // ──────────────────────────────────────────────────────────────────
+
+    [HttpGet("plantillas")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<ActionResult<List<TareaPlantillaDto>>> GetPlantillas()
+    {
+        var result = await Mediator.Send(new GetTareasPlantillaQuery());
+        if (!result.Succeeded) return BadRequest(result.Errors);
+        return Ok(result.Value);
+    }
+
+    [HttpPost("plantillas")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<ActionResult<TareaPlantillaDto>> CreatePlantilla([FromBody] CreateTareaPlantillaCommand command)
+    {
+        var result = await Mediator.Send(command);
+        if (!result.Succeeded) return BadRequest(result.Errors);
+        return Ok(result.Value);
+    }
+
+    [HttpPut("plantillas/{id:long}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<ActionResult> UpdatePlantilla(long id, [FromBody] UpdateTareaPlantillaCommand command)
+    {
+        var cmd = command with { Id = id };
+        var result = await Mediator.Send(cmd);
+        if (!result.Succeeded) return BadRequest(result.Errors);
+        return NoContent();
+    }
+
+    [HttpPatch("plantillas/{id:long}/reorder/{direccion}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<ActionResult> ReorderPlantilla(long id, string direccion)
+    {
+        var result = await Mediator.Send(new ReorderTareaPlantillaCommand(id, direccion));
+        if (!result.Succeeded) return BadRequest(result.Errors);
+        return NoContent();
+    }
+
+    [HttpDelete("plantillas/{id:long}")]
+    [Authorize(Roles = "Administrador")]
+    public async Task<ActionResult> DeletePlantilla(long id)
+    {
+        var result = await Mediator.Send(new DeleteTareaPlantillaCommand(id));
         if (!result.Succeeded) return BadRequest(result.Errors);
         return NoContent();
     }

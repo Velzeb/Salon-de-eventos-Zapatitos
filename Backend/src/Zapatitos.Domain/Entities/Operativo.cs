@@ -38,6 +38,10 @@ public class TareaOperativa : BaseEntity
     public virtual ArticuloInventario? ArticuloInventario { get; set; }
     public int CantidadRequerida { get; set; }
     public bool StockDescontado { get; set; } = false;
+
+    /// <summary>Si viene de una TareaPlantilla, guarda el ID de origen.</summary>
+    public long? PlantillaId { get; set; }
+    public virtual TareaPlantilla? Plantilla { get; set; }
     
     public DateTime? FechaCompletada { get; set; }
 }

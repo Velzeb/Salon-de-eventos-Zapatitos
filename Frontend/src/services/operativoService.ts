@@ -29,6 +29,8 @@ export interface StaffOperativo {
   rol: string;
   esPagado: boolean;
   fotoPerfilUrl?: string;
+  empleadoId?: number;
+  pagoPorEvento?: number;
 }
 
 export interface ItemOperativo {
@@ -51,6 +53,7 @@ export interface EventoOperativo {
   saldoPendiente: number;
   precioTotal: number;
   estado: string;
+  origen: string;
   notasAdmin?: string;
   tareas: TareaOperativa[];
   consumos: ConsumoExtra[];
@@ -199,6 +202,14 @@ export const operativoService = {
     return response.data;
   },
 
+  removeStaff: async (id: number): Promise<void> => {
+    await apiClient.delete(`/operativo/staff/${id}`);
+  },
+
+  verifyPago: async (id: number): Promise<void> => {
+    await apiClient.post(`/finanzas/pagos/${id}/verify`, { isAccepted: true });
+  },
+
   assignTarea: async (command: { tareaId: number, empleadoId: number }): Promise<void> => {
     await apiClient.post('/operativo/assign-tarea', command);
   },
@@ -210,6 +221,10 @@ export const operativoService = {
 
   updateCronograma: async (command: UpdateCronogramaCommand): Promise<void> => {
     await apiClient.put('/operativo/cronograma', command);
+  },
+
+  toggleActividad: async (id: number): Promise<void> => {
+    await apiClient.patch(`/operativo/cronograma/${id}/toggle`);
   },
 
   addInvitados: async (eventoId: number, nombres: string[]): Promise<void> => {
@@ -244,5 +259,51 @@ export const operativoService = {
 
   deleteMultimedia: async (eventoId: number, multimediaId: number): Promise<void> => {
     await apiClient.delete(`/operativo/${eventoId}/multimedia/${multimediaId}`);
+  },
+
+  addServicioToEvento: async (eventoId: number, servicioId: number, cantidad: number): Promise<number> => {
+    const response = await apiClient.post<number>(`/operativo/${eventoId}/items`, { servicioId, cantidad });
+    return response.data;
+  },
+
+  removeItemFromEvento: async (eventoId: number, itemId: number): Promise<void> => {
+    await apiClient.delete(`/operativo/${eventoId}/items/${itemId}`);
+  }
+};
+
+// ─────────────────────────────────────────────────────────
+//  Tareas Plantilla (Tareas Generales)
+// ─────────────────────────────────────────────────────────
+
+export interface TareaPlantilla {
+  id: number;
+  nombre: string;
+  descripcion?: string;
+  faseAplicacion: 'Preparacion' | 'EnVivo';
+  orden: number;
+  activa: boolean;
+}
+
+export const plantillasService = {
+  getAll: async (): Promise<TareaPlantilla[]> => {
+    const res = await apiClient.get<TareaPlantilla[]>('/operativo/plantillas');
+    return res.data;
+  },
+
+  create: async (data: { nombre: string; descripcion?: string; faseAplicacion: string }): Promise<TareaPlantilla> => {
+    const res = await apiClient.post<TareaPlantilla>('/operativo/plantillas', data);
+    return res.data;
+  },
+
+  update: async (id: number, data: { nombre: string; descripcion?: string; faseAplicacion: string; activa: boolean }): Promise<void> => {
+    await apiClient.put(`/operativo/plantillas/${id}`, data);
+  },
+
+  reorder: async (id: number, direccion: 'up' | 'down'): Promise<void> => {
+    await apiClient.patch(`/operativo/plantillas/${id}/reorder/${direccion}`);
+  },
+
+  delete: async (id: number): Promise<void> => {
+    await apiClient.delete(`/operativo/plantillas/${id}`);
   }
 };

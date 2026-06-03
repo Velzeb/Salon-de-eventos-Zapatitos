@@ -23,10 +23,17 @@ public class AssignTareaCommandHandler : IRequestHandler<AssignTareaCommand, Res
         var tarea = await _unitOfWork.Repository<TareaOperativa>().GetByIdAsync(request.TareaId);
         if (tarea == null) return Result<bool>.Failure("Tarea no encontrada.");
 
-        var empleado = await _unitOfWork.Repository<Empleado>().GetByIdAsync(request.EmpleadoId);
-        if (empleado == null) return Result<bool>.Failure("Empleado no encontrado.");
+        if (request.EmpleadoId <= 0)
+        {
+            tarea.AsignadoAId = null;
+        }
+        else
+        {
+            var empleado = await _unitOfWork.Repository<Empleado>().GetByIdAsync(request.EmpleadoId);
+            if (empleado == null) return Result<bool>.Failure("Empleado no encontrado.");
+            tarea.AsignadoAId = request.EmpleadoId;
+        }
 
-        tarea.AsignadoAId = request.EmpleadoId;
         _unitOfWork.Repository<TareaOperativa>().Update(tarea);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -16,7 +16,8 @@ import {
   Play,
   Wallet,
   ShieldCheck,
-  Wrench
+  Wrench,
+  ClipboardList
 } from 'lucide-react';
 import { authService } from '../../services/authService';
 import { finanzasService } from '../../services/finanzasService';
@@ -81,6 +82,7 @@ const Sidebar = () => {
       items: [
         { icon: Users, label: 'Clientes', path: '/admin/clientes', desc: 'CRM y Expedientes' },
         { icon: Users, label: 'Empleados', path: '/admin/empleados', desc: 'Equipo Humano' },
+        { icon: ClipboardList, label: 'Tareas Generales', path: '/admin/tareas-generales', desc: 'Plantillas de Tareas' },
         { icon: Settings, label: 'Plataforma', path: '/admin/cms', desc: 'Configuración Web' },
       ]
     }

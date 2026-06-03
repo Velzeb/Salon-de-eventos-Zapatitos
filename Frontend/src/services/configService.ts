@@ -19,12 +19,8 @@ export const configService = {
     await apiClient.post('/config/bulk', { items });
   },
 
-  // Método auxiliar para obtener múltiples claves comunes
   getLandingConfig: async () => {
-    const keys = ['hero_title', 'hero_subtitle', 'hero_image', 'contact_email', 'promo_banner', 'qr_pago_base64', 'contact_phone', 'contact_address', 'social_instagram', 'social_facebook'];
-    const results = await Promise.all(
-      keys.map(async (k) => ({ clave: k, valor: await configService.getConfig(k).catch(() => '') }))
-    );
-    return results;
+    const response = await apiClient.get<ConfigEntry[]>('/config/landing');
+    return response.data;
   }
 };

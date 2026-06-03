@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Plus, RefreshCw, Users, Mail, Briefcase, Shield, X, UserPlus, Fingerprint, Edit2, Trash2, Power } from 'lucide-react';
+import { Plus, RefreshCw, Users, Mail, Briefcase, Shield, X, UserPlus, Fingerprint, Edit2, Trash2, Power, History, FileText, AlertCircle } from 'lucide-react';
 import { empleadosService } from '../../services/empleadosService';
 import type { Empleado, CreateEmpleadoCommand } from '../../services/empleadosService';
+import { finanzasService } from '../../services/finanzasService';
 import { toast } from 'sonner';
 import ImageUpload from '../../components/common/ImageUpload';
 
@@ -22,6 +23,28 @@ const EmpleadosPage = () => {
     fotoPerfilUrl: ''
   });
   const [saving, setSaving] = useState(false);
+
+  // History Modal State
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [selectedEmployeeName, setSelectedEmployeeName] = useState('');
+  const [employeeHistory, setEmployeeHistory] = useState<any[]>([]);
+
+  const openHistory = async (empleadoId: number, nombre: string) => {
+    setSelectedEmployeeName(nombre);
+    setEmployeeHistory([]);
+    setShowHistoryModal(true);
+    setHistoryLoading(true);
+    try {
+      const data = await finanzasService.getEmpleadoNominas(empleadoId);
+      setEmployeeHistory(data);
+    } catch (err) {
+      toast.error('Error al cargar el historial de nóminas');
+      console.error('Error al cargar historial', err);
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
 
   useEffect(() => {
     loadEmpleados();
@@ -229,6 +252,13 @@ const EmpleadosPage = () => {
                     <td className="px-6 py-4 text-center">
                       <div className="flex items-center justify-center gap-2">
                         <button 
+                          onClick={() => openHistory(e.id, e.nombreCompleto)}
+                          className="w-8 h-8 rounded border bg-white text-slate-600 border-slate-200 hover:bg-slate-50 flex items-center justify-center transition-colors shadow-sm"
+                          title="Ver Historial de Nómina"
+                        >
+                          <History size={14} />
+                        </button>
+                        <button 
                           onClick={() => openUpdateModal(e)}
                           className="w-8 h-8 rounded border bg-white text-indigo-600 border-slate-200 hover:bg-slate-50 flex items-center justify-center transition-colors shadow-sm"
                           title="Editar"
@@ -426,6 +456,97 @@ const EmpleadosPage = () => {
                 className="flex-1 bg-indigo-600 text-white font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 hover:bg-indigo-700 transition-colors disabled:opacity-50"
               >
                 {saving ? <RefreshCw className="animate-spin" size={18} /> : <span>Guardar</span>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DETAILED HISTORY MODAL */}
+      {showHistoryModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl w-full max-w-3xl max-h-[85vh] overflow-hidden shadow-2xl flex flex-col animate-in fade-in zoom-in-95 duration-200 text-left">
+            {/* Modal Header */}
+            <div className="p-6 md:p-8 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-extrabold text-slate-800">Historial de Pagos</h3>
+                <p className="text-slate-500 text-sm mt-0.5">{selectedEmployeeName}</p>
+              </div>
+              <button 
+                onClick={() => setShowHistoryModal(false)}
+                className="w-10 h-10 rounded-full hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 md:p-8 overflow-y-auto flex-1 font-medium text-slate-700">
+              {historyLoading ? (
+                <div className="py-16 flex flex-col items-center justify-center space-y-4">
+                  <RefreshCw className="animate-spin text-indigo-600" size={32} />
+                  <p className="text-slate-500 text-sm font-semibold">Cargando registros históricos...</p>
+                </div>
+              ) : employeeHistory.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="border border-slate-200 rounded-2xl overflow-hidden">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-slate-50 text-xs font-black text-slate-400 uppercase tracking-wider border-b border-slate-200">
+                          <th className="p-4">Fecha Pago</th>
+                          <th className="p-4">Período / Concepto</th>
+                          <th className="p-4 text-right">Monto</th>
+                          <th className="p-4 text-center">Comprobante</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 text-sm font-medium text-slate-700">
+                        {employeeHistory.map((h) => (
+                          <tr key={h.id} className="hover:bg-slate-50/55 transition-colors">
+                            <td className="p-4 text-slate-500">
+                              {new Date(h.fechaPago).toLocaleDateString('es-ES')}
+                            </td>
+                            <td className="p-4 font-bold text-slate-800">
+                              {h.periodo || 'Pago de nómina'}
+                            </td>
+                            <td className="p-4 text-right font-extrabold text-indigo-600">
+                              ${h.monto.toLocaleString()}
+                            </td>
+                            <td className="p-4 text-center">
+                              {h.comprobanteUrl ? (
+                                <a 
+                                  href={h.comprobanteUrl} 
+                                  target="_blank" 
+                                  rel="noreferrer" 
+                                  className="inline-flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors"
+                                >
+                                  <FileText size={12} /> Ver
+                                </a>
+                              ) : (
+                                <span className="text-xs text-slate-400 italic">No disponible</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : (
+                <div className="py-16 text-center space-y-3">
+                  <AlertCircle size={40} className="text-slate-300 mx-auto" />
+                  <p className="text-slate-500 font-bold text-base">Sin pagos registrados</p>
+                  <p className="text-slate-400 text-xs max-w-xs mx-auto">Este empleado aún no cuenta con registros históricos de cobro procesados.</p>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-6 bg-slate-50 border-t border-slate-200 flex justify-end">
+              <button 
+                onClick={() => setShowHistoryModal(false)}
+                className="bg-slate-800 hover:bg-slate-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition-colors"
+              >
+                Cerrar
               </button>
             </div>
           </div>

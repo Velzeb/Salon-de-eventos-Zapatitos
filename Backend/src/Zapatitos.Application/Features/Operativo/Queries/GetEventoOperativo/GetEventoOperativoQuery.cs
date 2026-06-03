@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Zapatitos.Application.Common.Interfaces;
 using Zapatitos.Application.Common.Models;
 using Zapatitos.Domain.Entities;
+using Zapatitos.Domain.Enums;
 
 namespace Zapatitos.Application.Features.Operativo.Queries.GetEventoOperativo;
 
@@ -23,6 +24,7 @@ public class EventoOperativoDto
     public decimal SaldoPendiente { get; set; }
     public decimal PrecioTotal { get; set; }
     public string Estado { get; set; } = null!;
+    public string Origen { get; set; } = null!;
     public string? NotasAdmin { get; set; }
     public List<TareaOperativaDto> Tareas { get; set; } = new();
     public List<ConsumoExtraDto> Consumos { get; set; } = new();
@@ -126,6 +128,8 @@ public class StaffOperativoDto
     public string Rol { get; set; } = null!;
     public bool EsPagado { get; set; }
     public string? FotoPerfilUrl { get; set; }
+    public long? EmpleadoId { get; set; }
+    public decimal PagoPorEvento { get; set; }
 }
 
 public class ItemOperativoDto
@@ -192,6 +196,7 @@ public class GetEventoOperativoQueryHandler : IRequestHandler<GetEventoOperativo
                 SaldoPendiente = evento.SaldoPendiente,
                 PrecioTotal = evento.PrecioTotal,
                 Estado = evento.Estado.ToString(),
+                Origen = evento.Origen.ToString(),
                 NotasAdmin = evento.NotasAdmin ?? "",
                 Tematica = evento.Tematica,
                 NotasDecoracion = evento.NotasDecoracion,
@@ -228,14 +233,18 @@ public class GetEventoOperativoQueryHandler : IRequestHandler<GetEventoOperativo
                     Nombre = s.Empleado.NombreCompleto,
                     Rol = s.RolEnEvento ?? "Apoyo",
                     EsPagado = s.EsPagado,
-                    FotoPerfilUrl = s.Empleado.FotoPerfilUrl
+                    FotoPerfilUrl = s.Empleado.FotoPerfilUrl,
+                    EmpleadoId = s.EmpleadoId,
+                    PagoPorEvento = s.Empleado.PagoPorEvento
                 } : new StaffOperativoDto
                 {
                     Id = s.Id,
                     Nombre = "Sin Asignar",
                     Rol = s.RolEnEvento ?? "Apoyo",
                     EsPagado = s.EsPagado,
-                    FotoPerfilUrl = null
+                    FotoPerfilUrl = null,
+                    EmpleadoId = null,
+                    PagoPorEvento = 0
                 }).ToList(),
                 Items = evento.Items.Select(i => new ItemOperativoDto
                 {

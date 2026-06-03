@@ -21,8 +21,8 @@ export default {
         }
       },
       fontFamily: {
-        display: ['Outfit', 'sans-serif'],
-        main: ['Inter', 'sans-serif'],
+        display: ['Fredoka', 'sans-serif'],
+        main: ['Plus Jakarta Sans', 'sans-serif'],
       },
       boxShadow: {
         'premium': 'var(--shadow-premium)',

@@ -40,6 +40,7 @@ export interface CreateEventoCommand {
   comprobantePago?: string;
   origen?: number;
   tematica?: string;
+  notasAdmin?: string;
   items: EventoItemDto[];
 }
 

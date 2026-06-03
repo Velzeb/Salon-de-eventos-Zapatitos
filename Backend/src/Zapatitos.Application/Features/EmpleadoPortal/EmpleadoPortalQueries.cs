@@ -120,15 +120,15 @@ public class GetEmpleadoEventosQueryHandler : IRequestHandler<GetEmpleadoEventos
 
 public class GetEmpleadoJornadaQueryHandler : IRequestHandler<GetEmpleadoJornadaQuery, Result<EmpleadoJornadaDto>>
 {
-    private readonly IUnitOfWork _unitOfWork;
-    public GetEmpleadoJornadaQueryHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+    private readonly IMediator _mediator;
+    public GetEmpleadoJornadaQueryHandler(IMediator mediator) => _mediator = mediator;
 
     public async Task<Result<EmpleadoJornadaDto>> Handle(GetEmpleadoJornadaQuery request, CancellationToken cancellationToken)
     {
-        var perfilResult = await new GetEmpleadoPerfilQueryHandler(_unitOfWork).Handle(new GetEmpleadoPerfilQuery(request.UsuarioId), cancellationToken);
+        var perfilResult = await _mediator.Send(new GetEmpleadoPerfilQuery(request.UsuarioId), cancellationToken);
         if (!perfilResult.Succeeded || perfilResult.Value == null) return Result<EmpleadoJornadaDto>.Failure(perfilResult.Errors);
 
-        var eventosResult = await new GetEmpleadoEventosQueryHandler(_unitOfWork).Handle(new GetEmpleadoEventosQuery(request.UsuarioId), cancellationToken);
+        var eventosResult = await _mediator.Send(new GetEmpleadoEventosQuery(request.UsuarioId), cancellationToken);
         if (!eventosResult.Succeeded || eventosResult.Value == null) return Result<EmpleadoJornadaDto>.Failure(eventosResult.Errors);
 
         var eventos = eventosResult.Value.ToList();
@@ -145,3 +145,60 @@ public class GetEmpleadoJornadaQueryHandler : IRequestHandler<GetEmpleadoJornada
         return Result<EmpleadoJornadaDto>.Success(jornada);
     }
 }
+
+public class EmpleadoHistorialDto
+{
+    public long EventoId { get; set; }
+    public string PaqueteNombre { get; set; } = null!;
+    public DateTime FechaEvento { get; set; }
+    public string? RolEnEvento { get; set; }
+    public string EstadoEvento { get; set; } = null!;
+    public decimal MontoAPagar { get; set; }
+    public bool EsPagado { get; set; }
+    public long? PagoNominaId { get; set; }
+    public DateTime? FechaPago { get; set; }
+    public string? ComprobanteUrl { get; set; }
+    public string? PeriodoPago { get; set; }
+}
+
+public record GetEmpleadoHistorialQuery(long UsuarioId) : IRequest<Result<IEnumerable<EmpleadoHistorialDto>>>;
+
+public class GetEmpleadoHistorialQueryHandler : IRequestHandler<GetEmpleadoHistorialQuery, Result<IEnumerable<EmpleadoHistorialDto>>>
+{
+    private readonly IUnitOfWork _unitOfWork;
+    public GetEmpleadoHistorialQueryHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+
+    public async Task<Result<IEnumerable<EmpleadoHistorialDto>>> Handle(GetEmpleadoHistorialQuery request, CancellationToken cancellationToken)
+    {
+        var empleado = await _unitOfWork.Repository<Empleado>().Query()
+            .FirstOrDefaultAsync(e => e.UsuarioId == request.UsuarioId, cancellationToken);
+
+        if (empleado == null) return Result<IEnumerable<EmpleadoHistorialDto>>.Failure("Empleado no encontrado.");
+
+        var asignaciones = await _unitOfWork.Repository<AsignacionStaff>().Query()
+            .Include(a => a.Evento)
+                .ThenInclude(e => e.Paquete)
+            .Include(a => a.PagoNomina)
+            .Where(a => a.EmpleadoId == empleado.Id && !a.EliminadoEn.HasValue && !a.Evento.EliminadoEn.HasValue)
+            .OrderByDescending(a => a.Evento.FechaEvento)
+            .ToListAsync(cancellationToken);
+
+        var result = asignaciones.Select(a => new EmpleadoHistorialDto
+        {
+            EventoId = a.EventoId,
+            PaqueteNombre = a.Evento.Paquete?.Nombre ?? "Solo salón",
+            FechaEvento = a.Evento.FechaEvento,
+            RolEnEvento = a.RolEnEvento,
+            EstadoEvento = a.Evento.Estado.ToString(),
+            MontoAPagar = empleado.PagoPorEvento,
+            EsPagado = a.EsPagado,
+            PagoNominaId = a.PagoNominaId,
+            FechaPago = a.PagoNomina?.FechaPago,
+            ComprobanteUrl = a.PagoNomina?.ComprobanteUrl,
+            PeriodoPago = a.PagoNomina?.Periodo
+        }).ToList();
+
+        return Result<IEnumerable<EmpleadoHistorialDto>>.Success(result);
+    }
+}
+

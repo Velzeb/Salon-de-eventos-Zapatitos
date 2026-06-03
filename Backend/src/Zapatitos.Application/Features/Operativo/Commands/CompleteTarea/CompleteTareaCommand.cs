@@ -26,18 +26,44 @@ public class CompleteTareaCommandHandler : IRequestHandler<CompleteTareaCommand,
         
         if (tarea == null) return Result<bool>.Failure("La tarea no existe.");
         
-        tarea.Estado = EstadoTarea.Completada;
-        tarea.FechaCompletada = DateTime.UtcNow;
-
-        // === LÓGICA DE INVENTARIO FASE 6 ===
-        if (tarea.ArticuloInventarioId.HasValue && !tarea.StockDescontado)
+        if (tarea.Estado == EstadoTarea.Completada)
         {
-            var articulo = await _unitOfWork.Repository<ArticuloInventario>().GetByIdAsync(tarea.ArticuloInventarioId.Value);
-            if (articulo != null)
+            tarea.Estado = EstadoTarea.Pendiente;
+            tarea.FechaCompletada = null;
+
+            // Restablecer stock si fue descontado
+            if (tarea.ArticuloInventarioId.HasValue && tarea.StockDescontado)
             {
-                articulo.StockActual -= tarea.CantidadRequerida;
-                tarea.StockDescontado = true;
-                _unitOfWork.Repository<ArticuloInventario>().Update(articulo);
+                var articulo = await _unitOfWork.Repository<ArticuloInventario>().GetByIdAsync(tarea.ArticuloInventarioId.Value);
+                if (articulo != null)
+                {
+                    articulo.StockActual += tarea.CantidadRequerida;
+                    tarea.StockDescontado = false;
+                    _unitOfWork.Repository<ArticuloInventario>().Update(articulo);
+                }
+            }
+        }
+        else
+        {
+            tarea.Estado = EstadoTarea.Completada;
+            tarea.FechaCompletada = DateTime.UtcNow;
+
+            // === LÓGICA DE INVENTARIO FASE 6 ===
+            if (tarea.ArticuloInventarioId.HasValue && !tarea.StockDescontado)
+            {
+                var articulo = await _unitOfWork.Repository<ArticuloInventario>().GetByIdAsync(tarea.ArticuloInventarioId.Value);
+                if (articulo != null)
+                {
+                    articulo.StockActual -= tarea.CantidadRequerida;
+                    tarea.StockDescontado = true;
+                    _unitOfWork.Repository<ArticuloInventario>().Update(articulo);
+                    
+                    // Regla de Negocio: Alerta de Ruptura de Stock
+                    if (articulo.StockActual < 0)
+                    {
+                        Console.WriteLine($"[ALERTA INVENTARIO CRÍTICO] El artículo '{articulo.Nombre}' (ID: {articulo.Id}) ha caído en stock negativo: {articulo.StockActual}.");
+                    }
+                }
             }
         }
 

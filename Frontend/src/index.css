@@ -1,85 +1,164 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --font-main: 'Inter', sans-serif;
-  --font-display: 'Outfit', sans-serif;
+  --font-main: 'Plus Jakarta Sans', sans-serif;
+  --font-display: 'Fredoka', sans-serif;
 
-  /* Professional Enterprise Palette (Unified with Tailwind config) */
-  --primary: #4f46e5; /* Indigo 600 */
-  --primary-light: #6366f1;
-  --primary-dark: #4338ca;
-  --primary-glow: rgba(79, 70, 229, 0.1);
-  --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+  /* Sweet & Boutique Pastel Kids Palette */
+  --primary: #9d4edf; /* Magical Soft Violet */
+  --primary-light: #c084fc;
+  --primary-dark: #7b2cbf;
+  --primary-glow: rgba(157, 78, 223, 0.12);
+  --primary-gradient: linear-gradient(135deg, #a78bfa 0%, #f472b6 100%); /* Cotton candy pink-to-lavender */
   
-  --secondary: #10b981; /* Emerald 500 - Standard for success */
-  --secondary-glow: rgba(16, 185, 129, 0.08);
+  --secondary: #ffb7b2; /* Sweet Pastel Peach/Apricot */
+  --secondary-glow: rgba(255, 183, 178, 0.1);
   
-  --accent: #ef4444; /* Red 500 - Standard for alerts */
-  --accent-glow: rgba(239, 68, 68, 0.08);
+  --accent: #95e1d3; /* Soft Mint Green */
+  --accent-glow: rgba(149, 225, 211, 0.1);
 
-  /* Backgrounds & Surfaces (Cleaner & Professional) */
-  --bg-main: #f9fafb;     /* Slate 50 - Soft background */
-  --bg-secondary: #ffffff; /* Pure White - Main cards */
-  --bg-dark: #1f2937;      /* Slate 800 - Professional Dark (not harsh) */
-  --bg-glass: rgba(255, 255, 255, 0.8);
+  /* Backgrounds & Surfaces (Warm and creamy boutique) */
+  --bg-main: #fdfbf7;     /* Buttercream milk */
+  --bg-secondary: #ffffff; /* Pure White */
+  --bg-dark: #1e1b4b;      /* Deep Midnight Violet */
+  --bg-glass: rgba(255, 255, 255, 0.45);
   
-  /* Text (High Contrast & Legible) */
-  --text-main: #111827;    /* Slate 900 - Headings */
-  --text-muted: #4b5563;   /* Slate 600 - Body text */
-  --text-dim: #9ca3af;     /* Slate 400 - Secondary info */
+  /* Text */
+  --text-main: #1a153b;    /* Warm dark indigo for headings */
+  --text-muted: #5b528b;   /* Softer purple-gray for body text */
+  --text-dim: #9aa1b2;     
   --text-inverse: #ffffff;
   
   /* Borders */
-  --border: #e2e8f0;
-  --border-light: #f1f5f9;
+  --border: rgba(255, 255, 255, 0.6);
+  --border-light: rgba(255, 255, 255, 0.3);
   
-  /* Radius */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --radius-xl: 32px;
+  /* Radius (Very round, organic kid-friendly feel) */
+  --radius-sm: 14px;
+  --radius-md: 22px;
+  --radius-lg: 32px;
+  --radius-xl: 48px;
   --radius-full: 9999px;
   
-  /* Shadows */
-  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  --shadow-premium: 0 10px 40px -10px rgba(0, 0, 0, 0.08);
+  /* Shadows (Softer and colorful) */
+  --shadow-sm: 0 4px 10px 0 rgba(157, 78, 223, 0.03);
+  --shadow-md: 0 10px 24px -4px rgba(157, 78, 223, 0.05);
+  --shadow-lg: 0 20px 40px -6px rgba(157, 78, 223, 0.06);
+  --shadow-xl: 0 30px 60px -10px rgba(157, 78, 223, 0.09);
+  --shadow-premium: 0 20px 45px -10px rgba(157, 78, 223, 0.08);
 
-  --transition: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition: 400ms cubic-bezier(0.34, 1.6, 0.64, 1); /* Bouncy, responsive feel */
 }
 
 @layer base {
   html, body, #root {
-    @apply m-0 p-0 min-h-screen bg-[#f8fafc];
+    @apply m-0 p-0 min-h-screen bg-[var(--bg-main)];
   }
   
   body {
-    @apply font-sans text-[#0f172a] antialiased leading-relaxed overflow-x-hidden;
+    @apply font-sans antialiased leading-relaxed overflow-x-hidden text-[var(--text-muted)];
     font-family: var(--font-main);
   }
 
   h1, h2, h3, h4, h5 {
     font-family: var(--font-display);
-    @apply font-extrabold text-[#0f172a] tracking-tight leading-tight;
+    @apply font-bold text-[var(--text-main)] tracking-tight leading-tight;
   }
 }
 
 @layer components {
   .glass-effect {
-    @apply bg-white/70 backdrop-blur-xl border border-white/30 shadow-premium;
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(20px) saturate(190%);
+    -webkit-backdrop-filter: blur(20px) saturate(190%);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 10px 30px -5px rgba(157, 78, 223, 0.06), 0 4px 12px -2px rgba(244, 114, 182, 0.03);
   }
   
   .btn-primary-glow {
     @apply bg-primary-gradient text-white font-bold py-3 px-6 rounded-md transition-all
-           hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]
-           shadow-[0_10px_20px_-5px_rgba(99,102,241,0.3)];
+           hover:scale-[1.03] hover:brightness-110 active:scale-[0.97]
+           shadow-[0_12px_24px_-6px_rgba(244,114,182,0.4)];
   }
+
+  .text-playful-shadow {
+    text-shadow: 3px 4px 0px rgba(255, 183, 178, 0.45), -1px -1px 0px rgba(255, 255, 255, 0.7);
+  }
+
+  .sticker-frame {
+    position: relative;
+    z-index: 10;
+  }
+  .sticker-frame::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    background: var(--primary-gradient);
+    border-radius: var(--radius-lg);
+    transform: rotate(-1.8deg);
+    z-index: -1;
+    opacity: 0.85;
+  }
+  .sticker-frame::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    background: var(--secondary);
+    border-radius: var(--radius-lg);
+    transform: rotate(2.2deg);
+    z-index: -2;
+    opacity: 0.9;
+  }
+
+  .candy-bubble-btn {
+    position: relative;
+    background: var(--primary-gradient);
+    color: white;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    overflow: hidden;
+    transition: var(--transition);
+    box-shadow: 0 10px 25px -5px rgba(157, 78, 223, 0.35);
+  }
+  .candy-bubble-btn::before {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 8%;
+    width: 84%;
+    height: 35%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0) 100%);
+    border-radius: var(--radius-full);
+    pointer-events: none;
+  }
+  .candy-bubble-btn:hover {
+    transform: scale(1.05) translateY(-3px);
+    box-shadow: 0 16px 30px -5px rgba(244, 114, 182, 0.45);
+  }
+  .candy-bubble-btn:active {
+    transform: scale(0.96) translateY(0);
+  }
+}
+
+@keyframes float-bubble {
+  0% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-16px) rotate(4deg); }
+  100% { transform: translateY(0px) rotate(0deg); }
+}
+
+.floating-bubble-slow {
+  animation: float-bubble 6s ease-in-out infinite;
+}
+.floating-bubble-slower {
+  animation: float-bubble 9s ease-in-out infinite;
+}
+.floating-bubble-slowest {
+  animation: float-bubble 12s ease-in-out infinite;
 }
 
 /* Fix for unexpected empty space from notification library accessibility section */

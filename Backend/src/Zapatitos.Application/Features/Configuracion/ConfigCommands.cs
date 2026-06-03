@@ -1,4 +1,6 @@
 using MediatR;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -49,3 +51,30 @@ public class UpdateConfigCommandHandler : IRequestHandler<UpdateConfigCommand, R
         return Result<bool>.Success(true);
     }
 }
+
+public class ConfigDto
+{
+    public string Clave { get; set; } = null!;
+    public string Valor { get; set; } = null!;
+}
+
+public record GetLandingConfigQuery : IRequest<Result<List<ConfigDto>>>;
+
+public class GetLandingConfigQueryHandler : IRequestHandler<GetLandingConfigQuery, Result<List<ConfigDto>>>
+{
+    private readonly IUnitOfWork _unitOfWork;
+    public GetLandingConfigQueryHandler(IUnitOfWork unitOfWork) => _unitOfWork = unitOfWork;
+
+    public async Task<Result<List<ConfigDto>>> Handle(GetLandingConfigQuery request, CancellationToken cancellationToken)
+    {
+        // Return ALL configuration entries so the CMS and landing page always have
+        // access to every key, including dynamically created ones (JSON blobs, banners, etc.)
+        var configs = await _unitOfWork.Repository<ConfiguracionWeb>().Query()
+            .Where(c => c.EliminadoEn == null)
+            .Select(c => new ConfigDto { Clave = c.Clave, Valor = c.Valor })
+            .ToListAsync(cancellationToken);
+
+        return Result<List<ConfigDto>>.Success(configs);
+    }
+}
+

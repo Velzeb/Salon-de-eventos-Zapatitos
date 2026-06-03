@@ -116,8 +116,23 @@ export const finanzasService = {
     return response.data;
   },
 
-  pagarNomina: async (empleadoId: number): Promise<number> => {
-    const response = await apiClient.post<number>('/finanzas/nominas/pagar', { empleadoId });
+  pagarNomina: async (
+    empleadoId: number, 
+    comprobanteUrl?: string, 
+    eventosIds?: number[], 
+    periodo?: string
+  ): Promise<number> => {
+    const response = await apiClient.post<number>('/finanzas/nominas/pagar', { 
+      empleadoId, 
+      comprobanteUrl, 
+      eventosIds, 
+      periodo 
+    });
+    return response.data;
+  },
+
+  getEmpleadoNominas: async (empleadoId: number): Promise<any[]> => {
+    const response = await apiClient.get<any[]>(`/finanzas/nominas/historial/${empleadoId}`);
     return response.data;
   },
 

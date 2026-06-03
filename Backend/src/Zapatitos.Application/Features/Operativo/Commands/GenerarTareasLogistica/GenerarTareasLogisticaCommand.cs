@@ -12,6 +12,10 @@ public class GenerarTareasLogisticaHandler : IRequestHandler<GenerarTareasLogist
 {
     private readonly IUnitOfWork _unitOfWork;
 
+    // Rastrea en memoria qué combinaciones ya generamos para evitar duplicados en el mismo batch
+    private readonly HashSet<string> _tareasCreadas = new();
+    private List<TareaOperativa> _tareasExistentes = new();
+
     public GenerarTareasLogisticaHandler(IUnitOfWork unitOfWork)
     {
         _unitOfWork = unitOfWork;
@@ -19,6 +23,8 @@ public class GenerarTareasLogisticaHandler : IRequestHandler<GenerarTareasLogist
 
     public async Task<bool> Handle(GenerarTareasLogisticaCommand request, CancellationToken cancellationToken)
     {
+        _tareasCreadas.Clear();
+
         var evento = await _unitOfWork.Repository<Evento>()
             .Query()
             .Include(e => e.Items)
@@ -26,127 +32,237 @@ public class GenerarTareasLogisticaHandler : IRequestHandler<GenerarTareasLogist
 
         if (evento == null) return false;
 
-        // 1. Limpiar tareas logísticas antiguas sin origen de item para evitar duplicados
-        var tareasPrevias = await _unitOfWork.Repository<TareaOperativa>()
+        // ── PASO 1: Borrar tareas auto-generadas (Inventario, Servicio, Entrega) que NO estén
+        //    completadas ni con stock descontado. Las completadas se PRESERVAN.
+        //    También borrar tareas de Plantilla que no estén completadas.
+        var tareasBorrar = await _unitOfWork.Repository<TareaOperativa>()
             .Query()
-            .Where(t => t.EventoId == request.EventoId 
-                && t.ArticuloInventarioId != null
-                && t.EventoItemId == null
-                && !t.StockDescontado 
-                && t.Estado != EstadoTarea.Completada)
+            .Where(t => t.EventoId == request.EventoId
+                && t.Estado != EstadoTarea.Completada
+                && !t.StockDescontado
+                && (t.TipoTarea == TipoTareaOperativa.Inventario
+                    || t.TipoTarea == TipoTareaOperativa.Servicio
+                    || t.TipoTarea == TipoTareaOperativa.Entrega
+                    || t.PlantillaId != null))   // ← tareas de plantilla no completadas
             .ToListAsync(cancellationToken);
-        
-        foreach(var t in tareasPrevias) _unitOfWork.Repository<TareaOperativa>().Delete(t);
 
-        // 2. Analizar el paquete si existe. Una reserva puede ser solo salón.
-        if (evento.PaqueteId.HasValue)
+        foreach (var t in tareasBorrar)
+            _unitOfWork.Repository<TareaOperativa>().Delete(t);
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Cargar las tareas restantes en la BD para evitar duplicados
+        _tareasExistentes = await _unitOfWork.Repository<TareaOperativa>()
+            .Query()
+            .Where(t => t.EventoId == request.EventoId)
+            .ToListAsync(cancellationToken);
+
+        // Recordar qué plantillas ya están COMPLETADAS para no volver a agregarlas
+        var plantillasYaCompletadas = _tareasExistentes
+            .Where(t => t.PlantillaId != null && t.Estado == EstadoTarea.Completada)
+            .Select(t => t.PlantillaId!.Value)
+            .ToList();
+
+        // ── PASO 2: Artículos y servicios del paquete (solo si no hay items cargados en el evento)
+        bool tieneItemsCargados = evento.Items.Any();
+        if (evento.PaqueteId.HasValue && !tieneItemsCargados)
         {
             var paquete = await _unitOfWork.Repository<Paquete>()
                 .Query()
                 .Include(p => p.Articulos).ThenInclude(pa => pa.Articulo)
-                .Include(p => p.Servicios).ThenInclude(ps => ps.Servicio).ThenInclude(s => s.ArticuloInventario)
+                .Include(p => p.Servicios).ThenInclude(ps => ps.Servicio)
                 .FirstOrDefaultAsync(p => p.Id == evento.PaqueteId.Value, cancellationToken);
 
             if (paquete != null)
             {
+                // 2a. Artículos directos del paquete
                 foreach (var pa in paquete.Articulos)
                 {
-                    await CrearTareaLogistica(evento.Id, pa.Articulo, pa.Cantidad);
+                    if (pa.Articulo == null) continue;
+                    if (evento.Items.Any(i => i.ArticuloId == pa.ArticuloId)) continue;
+                    await GenerarParArticulo(evento.Id, pa.Articulo, pa.Cantidad, eventoItemId: null);
                 }
 
-                foreach (var ps in paquete.Servicios.Where(s => s.Servicio.ArticuloInventarioId != null))
+                // 2b. Servicios del paquete
+                foreach (var ps in paquete.Servicios)
                 {
-                    await CrearTareaLogistica(evento.Id, ps.Servicio.ArticuloInventario!, ps.Cantidad);
+                    if (ps.Servicio == null) continue;
+                    if (evento.Items.Any(i => i.ServicioId == ps.ServicioId)) continue;
+                    await GenerarParServicio(evento.Id, ps.Servicio, ps.Cantidad,
+                        eventoItemId: null, esPaquete: true, cancellationToken);
                 }
             }
         }
 
-        // 3. Analizar Items extra/adicionales
+        // ── PASO 3: Artículos extra del evento (eventos_items con ArticuloId)
         foreach (var item in evento.Items.Where(i => i.ArticuloId != null))
         {
-             var articulo = await _unitOfWork.Repository<ArticuloInventario>().GetByIdAsync(item.ArticuloId!.Value);
-             if (articulo != null)
-             {
-                 await CrearTareaLogistica(evento.Id, articulo, item.Cantidad, item.Id);
-             }
+            var articulo = await _unitOfWork.Repository<ArticuloInventario>()
+                .GetByIdAsync(item.ArticuloId!.Value);
+            if (articulo != null)
+                await GenerarParArticulo(evento.Id, articulo, item.Cantidad, item.Id);
         }
 
-        // 4. Cada servicio contratado debe poder marcarse como listo para entrega
-        foreach (var item in evento.Items.Where(i => i.ServicioId != null))
-        {
-            await CrearTareaServicio(evento.Id, item);
-        }
-
-        // 5. Items extra por ServicioId (si el servicio consume inventario)
+        // ── PASO 4: Servicios extra del evento (eventos_items con ServicioId)
         foreach (var item in evento.Items.Where(i => i.ServicioId != null))
         {
             var servicio = await _unitOfWork.Repository<Servicio>()
                 .Query()
-                .Include(s => s.ArticuloInventario)
                 .FirstOrDefaultAsync(s => s.Id == item.ServicioId!.Value, cancellationToken);
 
-            if (servicio?.ArticuloInventarioId != null && servicio.ArticuloInventario != null)
-            {
-                await CrearTareaLogistica(evento.Id, servicio.ArticuloInventario, item.Cantidad, item.Id);
-            }
+            if (servicio == null) continue;
+
+            await GenerarParServicio(evento.Id, servicio, item.Cantidad,
+                eventoItemId: item.Id, esPaquete: item.EsIncluidoEnPaquete, cancellationToken);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        // ── PASO 5: Tareas Generales (Plantillas activas)
+        var plantillas = await _unitOfWork.Repository<TareaPlantilla>()
+            .Query()
+            .Where(p => p.Activa)
+            .OrderBy(p => p.Orden)
+            .ToListAsync(cancellationToken);
+
+        foreach (var plantilla in plantillas)
+        {
+            // Saltar si ya está completada en este evento
+            if (plantillasYaCompletadas.Contains(plantilla.Id)) continue;
+
+            var tipo = plantilla.FaseAplicacion == FasePlantilla.EnVivo
+                ? TipoTareaOperativa.Entrega
+                : TipoTareaOperativa.Manual;
+
+            await _unitOfWork.Repository<TareaOperativa>().AddAsync(new TareaOperativa
+            {
+                EventoId = evento.Id,
+                NombreTarea = plantilla.Nombre,
+                Descripcion = plantilla.Descripcion,
+                TipoTarea = tipo,
+                PlantillaId = plantilla.Id,
+                Estado = EstadoTarea.Pendiente
+            });
+        }
+
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    private async Task CrearTareaLogistica(long eventoId, ArticuloInventario articulo, int cantidad, long? eventoItemId = null)
+    // ── Genera tarea de Preparación + Entrega para un artículo de inventario
+    private async Task GenerarParArticulo(long eventoId, ArticuloInventario articulo, int cantidad, long? eventoItemId)
     {
-        if (eventoItemId.HasValue)
-        {
-            var existe = await _unitOfWork.Repository<TareaOperativa>()
-                .Query()
-                .AnyAsync(t => t.EventoId == eventoId
-                    && t.EventoItemId == eventoItemId
-                    && t.ArticuloInventarioId == articulo.Id
-                    && t.TipoTarea == TipoTareaOperativa.Inventario);
+        var clavePrep = $"Inventario|{articulo.Id}";
+        var claveEntrega = $"Entrega|{articulo.Id}";
 
-            if (existe) return;
+        if (_tareasCreadas.Add(clavePrep))
+        {
+            var existeEnDb = _tareasExistentes.Any(t =>
+                t.ArticuloInventarioId == articulo.Id
+                && t.TipoTarea == TipoTareaOperativa.Inventario);
+
+            if (!existeEnDb)
+            {
+                await _unitOfWork.Repository<TareaOperativa>().AddAsync(new TareaOperativa
+                {
+                    EventoId = eventoId,
+                    NombreTarea = $"Preparar insumo: {articulo.Nombre}",
+                    Descripcion = $"Se requieren {cantidad} {articulo.UnidadMedida ?? "unidades"} para el evento.",
+                    ArticuloInventarioId = articulo.Id,
+                    EventoItemId = eventoItemId,
+                    CantidadRequerida = cantidad,
+                    TipoTarea = TipoTareaOperativa.Inventario,
+                    Estado = EstadoTarea.Pendiente
+                });
+            }
         }
 
-        var tarea = new TareaOperativa
+        if (_tareasCreadas.Add(claveEntrega))
         {
-            EventoId = eventoId,
-            NombreTarea = $"Preparar insumo: {articulo.Nombre}",
-            Descripcion = $"Se requieren {cantidad} {articulo.UnidadMedida} para el evento.",
-            ArticuloInventarioId = articulo.Id,
-            EventoItemId = eventoItemId,
-            CantidadRequerida = cantidad,
-            TipoTarea = TipoTareaOperativa.Inventario,
-            Estado = EstadoTarea.Pendiente
-        };
+            var existeEnDb = _tareasExistentes.Any(t =>
+                t.ArticuloInventarioId == articulo.Id
+                && t.TipoTarea == TipoTareaOperativa.Entrega);
 
-        await _unitOfWork.Repository<TareaOperativa>().AddAsync(tarea);
+            if (!existeEnDb)
+            {
+                await _unitOfWork.Repository<TareaOperativa>().AddAsync(new TareaOperativa
+                {
+                    EventoId = eventoId,
+                    NombreTarea = $"Entregar insumo: {articulo.Nombre}",
+                    Descripcion = $"Entregar {cantidad} {articulo.UnidadMedida ?? "unidades"} al cliente durante el evento.",
+                    ArticuloInventarioId = articulo.Id,
+                    EventoItemId = eventoItemId,
+                    CantidadRequerida = cantidad,
+                    TipoTarea = TipoTareaOperativa.Entrega,
+                    Estado = EstadoTarea.Pendiente
+                });
+            }
+        }
     }
 
-    private async Task CrearTareaServicio(long eventoId, EventoItem item)
+    // ── Genera tarea de Preparación + Entrega para un servicio.
+    private async Task GenerarParServicio(long eventoId, Servicio servicio, int cantidad,
+        long? eventoItemId, bool esPaquete, CancellationToken cancellationToken)
     {
-        var existe = await _unitOfWork.Repository<TareaOperativa>()
-            .Query()
-            .AnyAsync(t => t.EventoId == eventoId
-                && t.EventoItemId == item.Id
-                && t.TipoTarea == TipoTareaOperativa.Servicio);
-
-        if (existe) return;
-
-        var tarea = new TareaOperativa
+        // ¿El servicio consume inventario?
+        if (servicio.ArticuloInventarioId.HasValue)
         {
-            EventoId = eventoId,
-            NombreTarea = $"Preparar servicio: {item.Nombre}",
-            Descripcion = item.EsIncluidoEnPaquete
-                ? "Servicio incluido en el paquete. Marcar cuando esté listo para entrega."
-                : "Servicio adicional contratado. Marcar cuando esté listo para entrega.",
-            EventoItemId = item.Id,
-            CantidadRequerida = item.Cantidad,
-            TipoTarea = TipoTareaOperativa.Servicio,
-            Estado = EstadoTarea.Pendiente
-        };
+            var articulo = await _unitOfWork.Repository<ArticuloInventario>()
+                .GetByIdAsync(servicio.ArticuloInventarioId.Value);
 
-        await _unitOfWork.Repository<TareaOperativa>().AddAsync(tarea);
+            if (articulo != null)
+            {
+                await GenerarParArticulo(eventoId, articulo, cantidad, eventoItemId);
+                return;
+            }
+        }
+
+        // Servicio puro (sin inventario asociado)
+        var clavePrep = $"Servicio|{servicio.Id}";
+        var claveEntrega = $"EntregaServ|{servicio.Id}";
+
+        if (_tareasCreadas.Add(clavePrep))
+        {
+            var nombreTareaPrep = $"Preparar servicio: {servicio.Nombre}";
+            var existeEnDb = _tareasExistentes.Any(t =>
+                t.TipoTarea == TipoTareaOperativa.Servicio
+                && t.NombreTarea == nombreTareaPrep);
+
+            if (!existeEnDb)
+            {
+                await _unitOfWork.Repository<TareaOperativa>().AddAsync(new TareaOperativa
+                {
+                    EventoId = eventoId,
+                    NombreTarea = nombreTareaPrep,
+                    Descripcion = esPaquete
+                        ? "Servicio incluido en el paquete. Marcar cuando esté listo."
+                        : "Servicio adicional contratado. Marcar cuando esté listo.",
+                    EventoItemId = eventoItemId,
+                    CantidadRequerida = cantidad,
+                    TipoTarea = TipoTareaOperativa.Servicio,
+                    Estado = EstadoTarea.Pendiente
+                });
+            }
+        }
+
+        if (_tareasCreadas.Add(claveEntrega))
+        {
+            var nombreTareaEntrega = $"Entregar servicio: {servicio.Nombre}";
+            var existeEnDb = _tareasExistentes.Any(t =>
+                t.TipoTarea == TipoTareaOperativa.Entrega
+                && t.NombreTarea == nombreTareaEntrega);
+
+            if (!existeEnDb)
+            {
+                await _unitOfWork.Repository<TareaOperativa>().AddAsync(new TareaOperativa
+                {
+                    EventoId = eventoId,
+                    NombreTarea = nombreTareaEntrega,
+                    Descripcion = $"Confirmar entrega del servicio \"{servicio.Nombre}\" durante el evento.",
+                    EventoItemId = eventoItemId,
+                    CantidadRequerida = cantidad,
+                    TipoTarea = TipoTareaOperativa.Entrega,
+                    Estado = EstadoTarea.Pendiente
+                });
+            }
+        }
     }
 }

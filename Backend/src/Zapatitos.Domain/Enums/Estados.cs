@@ -36,7 +36,8 @@ public enum TipoTareaOperativa
 {
     Manual,
     Inventario,
-    Servicio
+    Servicio,
+    Entrega
 }
 
 public enum TipoProveedor
@@ -44,6 +45,12 @@ public enum TipoProveedor
     Insumos,
     Servicios,
     General
+}
+
+public enum FasePlantilla
+{
+    Preparacion,
+    EnVivo
 }
 
 public enum TipoServicio

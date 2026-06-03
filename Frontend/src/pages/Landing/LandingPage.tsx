@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
-import { configService } from '../../services/configService';
-import { authService } from '../../services/authService';
-import logo from '../../assets/logoZapatitos.webp';
+import { useOutletContext } from 'react-router-dom';
+import { paquetesService } from '../../services/paquetesService';
+import type { PublicLayoutContext } from '../../components/layout/PublicLayout';
 
 // Modular Sections
 import HeroSection from './sections/HeroSection';
 import ServicesSection from './sections/ServicesSection';
 import SalonGallery from './sections/SalonGallery';
+import PastEventsSection from './sections/PastEventsSection';
 import AvailabilitySection from './sections/AvailabilitySection';
 import PricingSection from './sections/PricingSection';
 import TestimonialsSection from './sections/TestimonialsSection';
@@ -16,173 +15,107 @@ import FAQSection from './sections/FAQSection';
 import AboutUsSection from './sections/AboutUsSection';
 import ContactSection from './sections/ContactSection';
 import CTASection from './sections/CTASection';
-import Footer from './sections/Footer';
 
 const LandingPage = () => {
-  const [configs, setConfigs] = useState<Record<string, string>>({
-    hero_title: 'Zapatitos — Magia en cada evento',
-    hero_subtitle: 'Donde la Diversión encuentra la Elegancia',
-    hero_image: '',
-    promo_banner: '',
-    contact_email: 'contacto@zapatitos.com',
-    contact_phone: '+1 (555) 123-4567',
-    contact_address: 'Calle de la Diversión 123, Ciudad Mágica',
-    social_instagram: '',
-    social_facebook: ''
-  });
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { configs } = useOutletContext<PublicLayoutContext>();
+  const [paquetes, setPaquetes] = useState<any[]>([]);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-
-    const loadConfig = async () => {
+    const loadPaquetes = async () => {
       try {
-        const data = await configService.getLandingConfig();
-        const map: Record<string, string> = {};
-        data.forEach(d => { if(d.valor) map[d.clave] = d.valor; });
-        setConfigs(prev => ({ ...prev, ...map }));
+        const data = await paquetesService.getPaquetes();
+        setPaquetes(data);
       } catch (err) {
-        // Defaults are fine
+        console.error('Error al cargar paquetes', err);
       }
     };
-    loadConfig();
-    return () => window.removeEventListener('scroll', handleScroll);
+    loadPaquetes();
   }, []);
 
   return (
-    <div className="bg-white selection:bg-primary selection:text-white">
-      {/* PROMO BANNER */}
-      {configs.promo_banner && (
-        <div className="bg-bg-dark py-2.5 px-6 relative z-[110]">
-          <p className="text-[9px] font-black text-white text-center uppercase tracking-[0.3em] animate-pulse">
-            {configs.promo_banner}
-          </p>
-        </div>
-      )}
-
-      {/* HEADER STICKY */}
-      <header 
-        className={`
-          fixed inset-x-0 z-[100] transition-all duration-500
-          ${configs.promo_banner ? (scrolled ? 'top-0' : 'top-[36px]') : 'top-0'}
-          ${scrolled ? 'bg-white/80 backdrop-blur-xl border-b border-slate-100 py-3 shadow-premium' : 'bg-transparent py-6'}
-          ${mobileMenuOpen ? 'bg-white h-screen top-0' : 'h-auto'}
-        `}
-      >
-        <div className="container mx-auto px-6 flex items-center justify-between">
-          <div className="flex items-center gap-3 group cursor-pointer">
-            <div className="w-12 h-12 bg-white rounded-2xl shadow-xl shadow-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <img src={logo} alt="Zapatitos" className="w-8 h-8 object-contain" />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-xl font-display font-black text-bg-dark tracking-tighter leading-none">Zapatitos</span>
-              <span className="text-[9px] font-black text-primary uppercase tracking-[0.2em]">Salón de Eventos</span>
-            </div>
-          </div>
-
-          <nav className={`
-            hidden lg:flex items-center gap-8
-          `}>
-            {['Salón', 'Servicios', 'Nosotros', 'Paquetes', 'Contacto'].map((item) => (
-              <a 
-                key={item}
-                href={`#${item.toLowerCase().replace(' ', '-')}`} 
-                className="text-sm font-bold text-slate-600 hover:text-primary transition-colors relative group"
-              >
-                {item}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
-              </a>
-            ))}
-            <div className="h-4 w-[1px] bg-slate-200" />
-            {!authService.isAuthenticated() ? (
-              <Link 
-                to="/cliente/login" 
-                className="bg-bg-dark text-white px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest hover:bg-primary hover:scale-105 active:scale-95 transition-all shadow-lg shadow-slate-900/10"
-              >
-                Mi Reserva
-              </Link>
-            ) : (
-              <Link 
-                to={authService.hasRole(['Administrador', 'Empleado']) ? "/admin" : "/cliente"} 
-                className="bg-primary text-white px-6 py-2.5 rounded-full text-xs font-black uppercase tracking-widest hover:bg-bg-dark hover:scale-105 active:scale-95 transition-all shadow-lg shadow-primary/10"
-              >
-                {authService.hasRole(['Administrador', 'Empleado']) ? "Panel de Control" : "Mi Perfil"}
-              </Link>
-            )}
-          </nav>
-
-          <button 
-            className="lg:hidden w-12 h-12 flex items-center justify-center text-slate-700 bg-slate-50 rounded-2xl active:scale-90 transition-all"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
-        </div>
-
-        {/* MOBILE MENU */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden absolute top-[100%] inset-x-0 bg-white border-t border-slate-100 p-8 flex flex-col gap-6 animate-in slide-in-from-top duration-500">
-            {['Salón', 'Servicios', 'Nosotros', 'Paquetes', 'Contacto'].map((item) => (
-              <a 
-                key={item}
-                href={`#${item.toLowerCase().replace(' ', '-')}`} 
-                className="text-2xl font-black text-bg-dark tracking-tighter hover:text-primary transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {item}
-              </a>
-            ))}
-            {!authService.isAuthenticated() ? (
-              <Link 
-                to="/cliente/login" 
-                className="mt-4 bg-primary text-white text-center py-5 rounded-3xl font-black uppercase tracking-widest text-sm shadow-xl shadow-primary/20"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Mi Reserva
-              </Link>
-            ) : (
-              <Link 
-                to={authService.hasRole(['Administrador', 'Empleado']) ? "/admin" : "/cliente"} 
-                className="mt-4 bg-bg-dark text-white text-center py-5 rounded-3xl font-black uppercase tracking-widest text-sm shadow-xl shadow-slate-900/20"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {authService.hasRole(['Administrador', 'Empleado']) ? "Panel de Control" : "Mi Perfil"}
-              </Link>
-            )}
-          </div>
-        )}
-      </header>
-
+    <div className="bg-bg-main selection:bg-primary selection:text-white">
       <main>
-        <HeroSection 
-          title={configs.hero_title} 
-          subtitle={configs.hero_subtitle} 
-          image={configs.hero_image} 
+        <HeroSection
+          title={configs.hero_title || 'Zapatitos — ¡Donde la magia y las sonrisas cobran vida!'}
+          subtitle={configs.hero_subtitle || 'Creamos el cumpleaños de sus sueños con peloteros, shows llenos de sorpresas y risas que recordarán para siempre.'}
+          image={configs.hero_image}
+          badge={configs.hero_badge}
         />
         <ServicesSection />
-        <SalonGallery />
-        <AboutUsSection />
-        <AvailabilitySection />
-        <PricingSection />
-        <TestimonialsSection />
-        <FAQSection />
-        <ContactSection 
-          phone={configs.contact_phone} 
-          email={configs.contact_email} 
-          address={configs.contact_address} 
+        <SalonGallery
+          title={configs.salon_title}
+          description={configs.salon_description}
+          featuresJson={configs.salon_features_json}
+          imagesJson={configs.salon_images_json}
         />
-        <CTASection />
-      </main>
 
-      <Footer 
-        phone={configs.contact_phone} 
-        email={configs.contact_email} 
-        address={configs.contact_address} 
-        instagram={configs.social_instagram}
-        facebook={configs.social_facebook}
-      />
+        {/* Dynamic Announcement Banner in the middle of the web */}
+        {configs.middle_banner_show === 'true' && (
+          <div
+            className="w-full py-8 text-center text-[var(--text-main)] shadow-inner relative overflow-hidden transition-all border-y border-purple-100/50"
+            style={{ backgroundColor: configs.middle_banner_bg || '#ffb7b2' }}
+          >
+            {/* Playful animated bubbles on the sides */}
+            <div className="absolute top-1/2 -translate-y-1/2 left-10 w-6 h-6 rounded-full bg-white/40 blur-[1px] animate-bounce pointer-events-none" />
+            <div className="absolute top-1/3 left-1/3 w-3 h-3 rounded-full bg-white/50 animate-pulse pointer-events-none" />
+            <div className="absolute bottom-4 right-12 w-8 h-8 rounded-full bg-white/30 blur-[1px] animate-bounce pointer-events-none" style={{ animationDelay: '1s' }} />
+
+            <div className="container mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center justify-center gap-6">
+              <span className="font-display font-bold text-lg md:text-xl tracking-wide flex items-center gap-2">
+                🎉 {configs.middle_banner_text || '¡Tenemos novedades especiales para tu evento!'} 🎉
+              </span>
+              {configs.middle_banner_link && (
+                <a
+                  href={configs.middle_banner_link}
+                  className="px-6 py-2.5 bg-white text-[10px] font-black uppercase tracking-widest rounded-full hover:scale-105 transition-transform shadow-md hover:shadow-lg inline-block text-slate-800"
+                >
+                  Saber Más
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
+        <PastEventsSection eventsData={configs.past_events_json} />
+        <AboutUsSection
+          aboutUsImage={configs.about_us_image}
+          title={configs.about_us_title}
+          description={configs.about_us_description}
+          yearsExperience={configs.about_us_years_experience}
+          valuesJson={configs.about_us_values_json}
+        />
+        <TestimonialsSection testimonialsJson={configs.testimonials_json} />
+        <AvailabilitySection
+          title={configs.availability_title}
+          subtitle={configs.availability_subtitle}
+          satisfaction={configs.availability_satisfaction}
+          eventsCount={configs.availability_events_count}
+        />
+        <PricingSection
+          packages={paquetes}
+          recommendedPackageId={configs.recommended_package_id}
+          currencySymbol={configs.currency_symbol}
+          currencyLabel={configs.currency_label}
+        />
+        <FAQSection faqsJson={configs.faqs_json} />
+        <ContactSection
+          phone={configs.contact_phone}
+          email={configs.contact_email}
+          address={configs.contact_address}
+          whatsapp={configs.contact_whatsapp}
+          instagram={configs.social_instagram}
+          facebook={configs.social_facebook}
+          tiktok={configs.social_tiktok}
+          mapsEmbedUrl={configs.maps_embed_url}
+          whatsappTemplate={configs.whatsapp_message_template}
+        />
+        <CTASection
+          title={configs.final_cta_title}
+          subtitle={configs.final_cta_subtitle}
+          primaryText={configs.final_cta_primary_text}
+          secondaryText={configs.final_cta_secondary_text}
+        />
+      </main>
     </div>
   );
 };

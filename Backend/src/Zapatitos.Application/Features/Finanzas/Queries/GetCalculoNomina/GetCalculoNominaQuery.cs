@@ -40,34 +40,29 @@ public class GetCalculoNominaQueryHandler : IRequestHandler<GetCalculoNominaQuer
 
     public async Task<Result<List<NominaEmpleadoDto>>> Handle(GetCalculoNominaQuery request, CancellationToken cancellationToken)
     {
-        var empleados = await _unitOfWork.Repository<Empleado>().Query().ToListAsync(cancellationToken);
         var asignaciones = await _unitOfWork.Repository<AsignacionStaff>().Query()
+            .Include(a => a.Empleado)
             .Include(a => a.Evento)
                 .ThenInclude(e => e.Paquete)
-            .Where(a => !a.EsPagado && a.Evento.Estado == Zapatitos.Domain.Enums.EstadoEvento.Terminado)
+            .Where(a => !a.EsPagado && a.Evento.Estado != Zapatitos.Domain.Enums.EstadoEvento.Cancelado && !a.Evento.EliminadoEn.HasValue && !a.EliminadoEn.HasValue)
             .ToListAsync(cancellationToken);
 
-        var result = new List<NominaEmpleadoDto>();
-
-        foreach (var emp in empleados)
-        {
-            var misAsignaciones = asignaciones.Where(a => a.EmpleadoId == emp.Id).ToList();
-            if (!misAsignaciones.Any()) continue;
-
-            result.Add(new NominaEmpleadoDto
+        var result = asignaciones
+            .GroupBy(a => a.Empleado)
+            .Select(g => new NominaEmpleadoDto
             {
-                EmpleadoId = emp.Id,
-                NombreEmpleado = emp.NombreCompleto,
-                PagoPorEvento = emp.PagoPorEvento,
-                EventosPendientes = misAsignaciones.Count(),
-                TotalAPagar = misAsignaciones.Count() * emp.PagoPorEvento,
-                Detalles = misAsignaciones.Select(a => new EventoPendientePagoDto {
+                EmpleadoId = g.Key.Id,
+                NombreEmpleado = g.Key.NombreCompleto,
+                PagoPorEvento = g.Key.PagoPorEvento,
+                EventosPendientes = g.Count(),
+                TotalAPagar = g.Count() * g.Key.PagoPorEvento,
+                Detalles = g.Select(a => new EventoPendientePagoDto {
                     EventoId = a.EventoId,
-                    Fecha = a.Evento.FechaEvento.ToShortDateString(),
+                    Fecha = a.Evento.FechaEvento.ToString("dd/MM/yyyy"),
                     Paquete = a.Evento.Paquete != null ? a.Evento.Paquete.Nombre : "Solo salón"
                 }).ToList()
-            });
-        }
+            })
+            .ToList();
 
         return Result<List<NominaEmpleadoDto>>.Success(result);
     }

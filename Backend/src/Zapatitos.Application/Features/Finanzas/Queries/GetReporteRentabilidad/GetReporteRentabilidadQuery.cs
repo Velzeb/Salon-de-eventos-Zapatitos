@@ -29,10 +29,13 @@ public class GetReporteRentabilidadQueryHandler : IRequestHandler<GetReporteRent
 
     public async Task<Result<RentabilidadDto>> Handle(GetReporteRentabilidadQuery request, CancellationToken cancellationToken)
     {
-        var movimientos = await _unitOfWork.Repository<MovimientoCaja>().Query().ToListAsync(cancellationToken);
+        var ingresos = await _unitOfWork.Repository<MovimientoCaja>().Query()
+            .Where(m => m.Tipo == TipoTransaccion.Ingreso && !m.EliminadoEn.HasValue)
+            .SumAsync(m => m.Monto, cancellationToken);
 
-        var ingresos = movimientos.Where(m => m.Tipo == TipoTransaccion.Ingreso).Sum(m => m.Monto);
-        var egresos = movimientos.Where(m => m.Tipo == TipoTransaccion.Egreso).Sum(m => m.Monto);
+        var egresos = await _unitOfWork.Repository<MovimientoCaja>().Query()
+            .Where(m => m.Tipo == TipoTransaccion.Egreso && !m.EliminadoEn.HasValue)
+            .SumAsync(m => m.Monto, cancellationToken);
 
         return Result<RentabilidadDto>.Success(new RentabilidadDto
         {

@@ -38,9 +38,9 @@ public class UpdateEstadoEventoCommandHandler : IRequestHandler<UpdateEstadoEven
         var transicionesValidas = new Dictionary<EstadoEvento, EstadoEvento[]>
         {
             [EstadoEvento.Provisional] = new[] { EstadoEvento.Confirmado, EstadoEvento.Cancelado },
-            [EstadoEvento.Confirmado] = new[] { EstadoEvento.EnCurso, EstadoEvento.Cancelado },
-            [EstadoEvento.EnCurso] = new[] { EstadoEvento.Finalizado, EstadoEvento.Cancelado },
-            [EstadoEvento.Finalizado] = new[] { EstadoEvento.Terminado }
+            [EstadoEvento.Confirmado]  = new[] { EstadoEvento.EnCurso, EstadoEvento.Provisional, EstadoEvento.Cancelado },
+            [EstadoEvento.EnCurso]     = new[] { EstadoEvento.Finalizado, EstadoEvento.Confirmado, EstadoEvento.Cancelado },
+            [EstadoEvento.Finalizado]  = new[] { EstadoEvento.Terminado, EstadoEvento.EnCurso }
         };
 
         if (!transicionesValidas.TryGetValue(evento.Estado, out var permitidos) || !permitidos.Contains(nuevoEstado))
@@ -51,13 +51,36 @@ public class UpdateEstadoEventoCommandHandler : IRequestHandler<UpdateEstadoEven
             );
         }
 
+        // Regla de Negocio Crítica: No se puede terminar una fiesta si hay deuda
+        if (nuevoEstado == EstadoEvento.Terminado && evento.SaldoPendiente > 0)
+        {
+            return Result<bool>.Failure($"No se puede dar por Terminado el evento. Aún existe un saldo pendiente de ${evento.SaldoPendiente}.");
+        }
+
         if (nuevoEstado == EstadoEvento.Confirmado)
         {
+            // Primera confirmación: crear invitación digital si no existe.
+            // NO regenerar tareas (ya se crearon al crear el evento si vino del admin,
+            // o se crean en este punto si venía de Provisional).
             await _eventoService.ConfirmarEventoAsync(evento.Id, cancellationToken);
-            await _mediator.Send(new Zapatitos.Application.Features.Operativo.Commands.GenerarTareasLogistica.GenerarTareasLogisticaCommand(request.EventoId));
+
+            // Solo regenerar tareas si el evento REGRESÓ de EnCurso/Finalizado
+            // (identificado porque el estado actual del evento antes de cambiar era ≥ EnCurso)
+            if (evento.Estado >= EstadoEvento.EnCurso)
+            {
+                await _mediator.Send(new Zapatitos.Application.Features.Operativo.Commands.GenerarTareasLogistica.GenerarTareasLogisticaCommand(request.EventoId), cancellationToken);
+            }
+        }
+        else if (nuevoEstado == EstadoEvento.EnCurso)
+        {
+            // Al iniciar la fiesta: actualizar estado y regenerar tareas de Entrega
+            evento.Estado = nuevoEstado;
+            _unitOfWork.Repository<Evento>().Update(evento);
+            await _mediator.Send(new Zapatitos.Application.Features.Operativo.Commands.GenerarTareasLogistica.GenerarTareasLogisticaCommand(request.EventoId), cancellationToken);
         }
         else
         {
+            // Resto de transiciones: solo cambiar estado
             evento.Estado = nuevoEstado;
             _unitOfWork.Repository<Evento>().Update(evento);
         }

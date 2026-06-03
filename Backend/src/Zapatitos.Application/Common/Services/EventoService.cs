@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +22,11 @@ public class EventoService : IEventoService
         _unitOfWork = unitOfWork;
     }
 
+    /// <summary>
+    /// Confirma un evento: cambia su estado a Confirmado y crea la invitación digital
+    /// si aún no existe. Las tareas generales (plantillas) se generan por separado
+    /// en GenerarTareasLogisticaCommand.
+    /// </summary>
     public async Task ConfirmarEventoAsync(long eventoId, CancellationToken cancellationToken)
     {
         var evento = await _unitOfWork.Repository<Evento>().GetByIdAsync(eventoId);
@@ -31,7 +35,7 @@ public class EventoService : IEventoService
         evento.Estado = EstadoEvento.Confirmado;
         _unitOfWork.Repository<Evento>().Update(evento);
 
-        // 1. Invitación Digital
+        // Crear invitación digital si no existe
         var invitacionExistente = await _unitOfWork.Repository<InvitacionDigital>().Query()
             .AnyAsync(i => i.EventoId == evento.Id, cancellationToken);
 
@@ -45,43 +49,14 @@ public class EventoService : IEventoService
                 fechaExpiracion = evento.FechaEvento.AddDays(30).ToString("o")
             });
 
-            var invitacion = new InvitacionDigital
+            await _unitOfWork.Repository<InvitacionDigital>().AddAsync(new InvitacionDigital
             {
                 EventoId = evento.Id,
                 TokenAcceso = Guid.NewGuid(),
                 ConfigJson = configJson
-            };
-            await _unitOfWork.Repository<InvitacionDigital>().AddAsync(invitacion);
+            });
         }
 
-        // 2. Auto-generación de Checklist Operativo
-        var tieneTareasBase = await _unitOfWork.Repository<TareaOperativa>().Query()
-            .AnyAsync(t => t.EventoId == evento.Id 
-                && t.TipoTarea == TipoTareaOperativa.Manual 
-                && t.EventoItemId == null 
-                && t.ArticuloInventarioId == null, cancellationToken);
-
-        if (!tieneTareasBase)
-        {
-            var tareasBase = new List<string> { 
-                "Limpieza profunda del salón", 
-                "Montaje de mesas y sillas", 
-                "Decoración de mesa principal", 
-                "Recepción y verificación del pastel",
-                "Prueba de equipo de sonido",
-                "Revisión general con el personal"
-            };
-
-            foreach (var nombre in tareasBase)
-            {
-                await _unitOfWork.Repository<TareaOperativa>().AddAsync(new TareaOperativa
-                {
-                    EventoId = evento.Id,
-                    NombreTarea = nombre,
-                    Estado = EstadoTarea.Pendiente,
-                    TipoTarea = TipoTareaOperativa.Manual
-                });
-            }
-        }
+        // ⚠️ NO hace SaveChangesAsync aquí — el handler que llamó es responsable del commit.
     }
 }

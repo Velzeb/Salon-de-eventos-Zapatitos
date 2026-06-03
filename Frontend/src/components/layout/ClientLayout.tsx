@@ -6,8 +6,8 @@ import { clientePortalService, type PerfilCliente } from '../../services/cliente
 import logo from '../../assets/logoZapatitos.webp';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-  `inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors ${
-    isActive ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+  `inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black transition-all ${
+    isActive ? 'bg-primary-gradient text-white shadow-lg shadow-pink-200/50' : 'text-slate-600 hover:bg-purple-50 hover:text-primary'
   }`;
 
 const ClientLayout = () => {
@@ -39,20 +39,20 @@ const ClientLayout = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#f6f7fb] text-slate-900">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur-xl">
+        <div className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link to="/cliente/dashboard" className="flex min-w-0 items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-purple-100 bg-white shadow-lg shadow-purple-100/60">
               <img src={logo} alt="Zapatitos" className="h-7 w-7 object-contain" />
             </span>
             <span className="min-w-0">
-              <span className="block truncate text-base font-black leading-tight">Portal de cliente</span>
-              <span className="block truncate text-xs font-medium text-slate-500">Zapatitos</span>
+              <span className="block truncate font-display text-lg font-black leading-tight text-slate-950">Portal de cliente</span>
+              <span className="block truncate text-xs font-black uppercase tracking-[0.16em] text-primary">Zapatitos</span>
             </span>
           </Link>
 
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden items-center gap-2 rounded-full border border-slate-200 bg-slate-50 p-1.5 shadow-sm md:flex">
             <NavLink to="/cliente/dashboard" className={navLinkClass}>
               <LayoutDashboard size={17} />
               Mis eventos
@@ -63,7 +63,7 @@ const ClientLayout = () => {
             </NavLink>
             <Link
               to="/reservar"
-              className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black text-slate-600 transition-colors hover:bg-amber-50 hover:text-amber-700"
             >
               <CalendarPlus size={17} />
               Nueva reserva
@@ -73,7 +73,7 @@ const ClientLayout = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/cliente/perfil')}
-              className="hidden items-center gap-3 rounded-md border border-slate-200 bg-white px-3 py-2 text-left transition-colors hover:bg-slate-50 sm:flex"
+              className="hidden items-center gap-3 rounded-full border border-purple-100 bg-white px-3 py-2 text-left shadow-sm transition-colors hover:bg-purple-50 sm:flex"
             >
               {perfil?.fotoPerfilUrl ? (
                 <img src={perfil.fotoPerfilUrl} alt={displayName} className="h-8 w-8 rounded-full object-cover" />
@@ -85,7 +85,7 @@ const ClientLayout = () => {
               <span className="max-w-40 truncate text-sm font-bold">{displayName}</span>
             </button>
             <button
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-rose-50 hover:text-rose-600"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-transparent text-slate-500 transition-colors hover:border-rose-100 hover:bg-rose-50 hover:text-rose-600"
               onClick={() => authService.logout('/cliente/login')}
               title="Cerrar sesión"
             >
@@ -94,7 +94,7 @@ const ClientLayout = () => {
           </div>
         </div>
 
-        <nav className="flex gap-1 overflow-x-auto border-t border-slate-100 px-4 py-2 md:hidden">
+        <nav className="flex gap-2 overflow-x-auto border-t border-white/70 px-4 py-3 md:hidden">
           <NavLink to="/cliente/dashboard" className={navLinkClass}>
             <LayoutDashboard size={16} />
             Mis eventos
@@ -103,14 +103,14 @@ const ClientLayout = () => {
             <UserRound size={16} />
             Perfil
           </NavLink>
-          <Link to="/reservar" className="inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold text-slate-600">
+          <Link to="/reservar" className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black text-slate-600">
             <CalendarPlus size={16} />
             Reservar
           </Link>
         </nav>
       </header>
 
-      <main className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="relative mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Outlet />
       </main>
     </div>

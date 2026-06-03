@@ -43,6 +43,16 @@ export const disponibilidadService = {
     }
   },
 
+  getMonthAvailable: async (year: number, month: number): Promise<{ day: number, status: 'free' | 'partial' | 'full' | 'closed', slotsCount: number, availableCount: number }[]> => {
+    try {
+      const response = await apiClient.get<any[]>(`/disponibilidad/month-available?year=${year}&month=${month}`);
+      return response.data;
+    } catch (e) {
+      console.error('Error en getMonthAvailable:', e);
+      return [];
+    }
+  },
+
   saveConfig: async (config: Partial<DisponibilidadConfig>): Promise<void> => {
     await apiClient.post('/disponibilidad/config', config);
   },

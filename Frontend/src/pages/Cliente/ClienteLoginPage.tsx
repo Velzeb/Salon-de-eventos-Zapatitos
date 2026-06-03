@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Mail, Lock, User, Phone, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, Lock, User, Phone, ArrowRight, Sparkles } from 'lucide-react';
 import { authService } from '../../services/authService';
 import logo from '../../assets/logoZapatitos.webp';
 
@@ -26,13 +26,15 @@ const ClienteLoginPage = () => {
     setError('');
     try {
       await authService.login(loginData.email, loginData.password);
-      navigate('/cliente/dashboard');
+      const queryParams = new URLSearchParams(window.location.search);
+      const redirectPath = queryParams.get('redirect');
+      navigate(redirectPath || '/cliente/dashboard');
     } catch (err: any) {
       const data = err.response?.data;
       const errorMsg = Array.isArray(data) ? data[0] :
         data?.Errors ? data.Errors[0] :
         data?.errors ? data.errors[0] :
-        data?.message || 'Credenciales invalidas o error de conexion';
+        data?.message || 'Credenciales inválidas o error de conexión';
       setError(errorMsg);
     } finally {
       setLoading(false);
@@ -51,7 +53,12 @@ const ClienteLoginPage = () => {
         telefono: registerData.telefono || undefined,
         password: registerData.password
       });
-      setMode('login');
+      
+      // Auto-login after registration
+      await authService.login(registerData.email, registerData.password);
+      const queryParams = new URLSearchParams(window.location.search);
+      const redirectPath = queryParams.get('redirect');
+      navigate(redirectPath || '/cliente/dashboard');
     } catch (err: any) {
       const data = err.response?.data;
       const errorMsg = Array.isArray(data) ? data[0] :
@@ -65,19 +72,24 @@ const ClienteLoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-slate-50 relative overflow-hidden selection:bg-primary selection:text-white">
+    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-[var(--bg-main)] relative overflow-hidden selection:bg-primary selection:text-white">
       {/* DECORATION */}
       <div className="absolute top-0 right-0 w-1/2 h-screen bg-primary/5 -skew-x-12 translate-x-1/4 pointer-events-none" />
-      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-pink-100/30 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-1/3 w-82 h-82 bg-purple-100/30 rounded-full blur-3xl pointer-events-none" />
       
+      {/* Floating Bubbles */}
+      <div className="absolute top-20 right-12 w-8 h-8 rounded-full bg-pink-300/30 blur-[1px] floating-bubble-slow pointer-events-none" />
+      <div className="absolute bottom-20 left-16 w-12 h-12 rounded-full bg-purple-300/20 blur-[1px] floating-bubble-slower pointer-events-none" />
+
       <div className="w-full max-w-xl relative animate-in fade-in slide-in-from-bottom-8 duration-700">
-        <div className="bg-white border border-slate-200 rounded-3xl p-10 lg:p-16 shadow-xl shadow-slate-200/50">
+        <div className="glass-effect rounded-[3.5rem] p-10 lg:p-16 border border-white">
           <div className="flex flex-col items-center text-center space-y-6 mb-12">
-            <div className="w-20 h-20 bg-indigo-50 rounded-2xl flex items-center justify-center mb-2">
+            <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-2 shadow-md border border-purple-50">
               <img src={logo} alt="Zapatitos" className="w-12 h-12 object-contain" />
             </div>
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold text-slate-800">
+              <h1 className="text-3xl font-display font-bold text-[var(--text-main)] text-playful-shadow">
                 {mode === 'login' ? 'Portal de Clientes' : 'Crear Cuenta'}
               </h1>
               <p className="text-slate-500 font-medium text-sm">
@@ -88,15 +100,19 @@ const ClienteLoginPage = () => {
             </div>
           </div>
 
-          <div className="flex p-1 bg-slate-100 rounded-xl mb-10">
+          <div className="flex p-1.5 bg-purple-50/70 rounded-2xl border border-purple-100/50 mb-10">
             <button
-              className={`flex-1 py-3 rounded-lg font-semibold text-sm transition-all ${mode === 'login' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex-1 py-3.5 rounded-xl font-display font-bold text-xs uppercase tracking-widest transition-all ${
+                mode === 'login' ? 'bg-white text-primary shadow-md' : 'text-slate-500 hover:text-slate-700'
+              }`}
               onClick={() => setMode('login')}
             >
               Iniciar Sesión
             </button>
             <button
-              className={`flex-1 py-3 rounded-lg font-semibold text-sm transition-all ${mode === 'register' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex-1 py-3.5 rounded-xl font-display font-bold text-xs uppercase tracking-widest transition-all ${
+                mode === 'register' ? 'bg-white text-primary shadow-md' : 'text-slate-500 hover:text-slate-700'
+              }`}
               onClick={() => setMode('register')}
             >
               Registrarme
@@ -104,44 +120,52 @@ const ClienteLoginPage = () => {
           </div>
 
           <form onSubmit={mode === 'login' ? handleLogin : handleRegister} className="space-y-5">
-            {mode === 'register' && (
-              <div className="grid grid-cols-2 gap-5">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-600">Usuario</label>
-                  <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
-                    <input
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-3 text-sm focus:bg-white focus:border-indigo-500 outline-none transition-all"
-                      placeholder="alex123"
-                      value={registerData.username}
-                      onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
-                      required
-                    />
+            <AnimatePresence mode="wait">
+              {mode === 'register' && (
+                <motion.div 
+                  key="register-fields"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="grid grid-cols-2 gap-5"
+                >
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Usuario</label>
+                    <div className="relative group">
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
+                      <input
+                        className="w-full bg-white/70 border border-purple-100/70 rounded-2xl pl-12 pr-4 py-3.5 text-sm font-medium focus:bg-white focus:border-primary-light outline-none transition-all"
+                        placeholder="alex123"
+                        value={registerData.username}
+                        onChange={(e) => setRegisterData({ ...registerData, username: e.target.value })}
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-600">Nombre Completo</label>
-                  <div className="relative group">
-                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
-                    <input
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-3 text-sm focus:bg-white focus:border-indigo-500 outline-none transition-all"
-                      placeholder="Alex García"
-                      value={registerData.nombreCompleto}
-                      onChange={(e) => setRegisterData({ ...registerData, nombreCompleto: e.target.value })}
-                      required
-                    />
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre Completo</label>
+                    <div className="relative group">
+                      <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
+                      <input
+                        className="w-full bg-white/70 border border-purple-100/70 rounded-2xl pl-12 pr-4 py-3.5 text-sm font-medium focus:bg-white focus:border-primary-light outline-none transition-all"
+                        placeholder="Alex García"
+                        value={registerData.nombreCompleto}
+                        onChange={(e) => setRegisterData({ ...registerData, nombreCompleto: e.target.value })}
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-600">Correo Electrónico</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Correo Electrónico</label>
               <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
                 <input
                   type="email"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-3 text-sm focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                  className="w-full bg-white/70 border border-purple-100/70 rounded-2xl pl-12 pr-4 py-3.5 text-sm font-medium focus:bg-white focus:border-primary-light outline-none transition-all"
                   placeholder="tu@email.com"
                   value={mode === 'login' ? loginData.email : registerData.email}
                   onChange={(e) => mode === 'login' 
@@ -154,11 +178,11 @@ const ClienteLoginPage = () => {
 
             {mode === 'register' && (
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-600">Teléfono</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Teléfono</label>
                 <div className="relative group">
-                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
                   <input
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-3 text-sm focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                    className="w-full bg-white/70 border border-purple-100/70 rounded-2xl pl-12 pr-4 py-3.5 text-sm font-medium focus:bg-white focus:border-primary-light outline-none transition-all"
                     placeholder="+54 11 1234 5678"
                     value={registerData.telefono}
                     onChange={(e) => setRegisterData({ ...registerData, telefono: e.target.value })}
@@ -168,12 +192,12 @@ const ClienteLoginPage = () => {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-600">Contraseña</label>
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contraseña</label>
               <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={18} />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors" size={18} />
                 <input
                   type="password"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-12 pr-4 py-3 text-sm focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                  className="w-full bg-white/70 border border-purple-100/70 rounded-2xl pl-12 pr-4 py-3.5 text-sm font-medium focus:bg-white focus:border-primary-light outline-none transition-all"
                   placeholder="••••••••"
                   value={mode === 'login' ? loginData.password : registerData.password}
                   onChange={(e) => mode === 'login'
@@ -188,7 +212,7 @@ const ClienteLoginPage = () => {
               <motion.div 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="bg-rose-50 border border-rose-100 p-4 rounded-xl flex items-center gap-3 text-rose-600 text-sm font-medium"
+                className="bg-rose-50 border border-rose-100 p-4 rounded-2xl flex items-center gap-3 text-rose-600 text-sm font-medium"
               >
                 <div className="w-5 h-5 rounded-full bg-rose-500/20 flex items-center justify-center text-xs">!</div>
                 {error}
@@ -196,28 +220,28 @@ const ClienteLoginPage = () => {
             )}
 
             <button 
-              className="w-full bg-indigo-600 text-white rounded-xl flex items-center justify-center gap-3 py-4 hover:bg-indigo-700 transition-colors disabled:opacity-50 group font-bold shadow-sm" 
+              className="w-full py-5 rounded-[1.8rem] candy-bubble-btn flex items-center justify-center gap-3 text-xs" 
               disabled={loading}
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <span className="text-sm">
+                  <span>
                     {mode === 'login' ? 'Entrar al Portal' : 'Crear mi Cuenta'}
                   </span>
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </>
               )}
             </button>
           </form>
 
-          <div className="mt-8 text-center">
+          <div className="mt-10 text-center">
             <Link 
               to="/" 
-              className="text-sm font-semibold text-slate-500 hover:text-indigo-600 transition-colors"
+              className="text-xs font-black uppercase tracking-widest text-slate-500 hover:text-primary transition-colors flex items-center justify-center gap-1.5"
             >
-              ← Volver a la página principal
+              <Sparkles size={12} className="text-primary animate-pulse" /> Volver a la página principal
             </Link>
           </div>
         </div>

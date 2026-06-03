@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { CalendarDays, ClipboardList, LayoutDashboard, LogOut } from 'lucide-react';
+import { CalendarDays, ClipboardList, LayoutDashboard, LogOut, DollarSign } from 'lucide-react';
 import { authService } from '../../services/authService';
 import { empleadoPortalService, type EmpleadoPerfil } from '../../services/empleadoPortalService';
 import logo from '../../assets/logoZapatitos.webp';
@@ -42,6 +42,10 @@ const EmployeeLayout = () => {
               <CalendarDays size={17} />
               Eventos
             </NavLink>
+            <NavLink to="/empleado/pagos" className={navClass}>
+              <DollarSign size={17} />
+              Mis pagos
+            </NavLink>
           </nav>
 
           <div className="flex items-center gap-3">
@@ -72,6 +76,10 @@ const EmployeeLayout = () => {
           <NavLink to="/empleado/eventos" className={navClass}>
             <CalendarDays size={16} />
             Eventos
+          </NavLink>
+          <NavLink to="/empleado/pagos" className={navClass}>
+            <DollarSign size={16} />
+            Pagos
           </NavLink>
         </nav>
       </header>

@@ -44,6 +44,7 @@ public class ZapatitosDbContext : DbContext
     public DbSet<ActividadCronograma> Cronogramas => Set<ActividadCronograma>();
     public DbSet<AsignacionStaff> AsignacionesStaff => Set<AsignacionStaff>();
     public DbSet<TareaOperativa> TareasOperativas => Set<TareaOperativa>();
+    public DbSet<TareaPlantilla> TareasPlantilla => Set<TareaPlantilla>();
     public DbSet<ConsumoExtra> ConsumosExtras => Set<ConsumoExtra>();
     public DbSet<EventoItem> EventoItems => Set<EventoItem>();
     public DbSet<FotoEvento> FotosEvento => Set<FotoEvento>();
@@ -129,6 +130,9 @@ public class ZapatitosDbContext : DbContext
 
         modelBuilder.Entity<ArticuloInventario>()
             .ToTable("articulos_inventario");
+
+        modelBuilder.Entity<TareaPlantilla>()
+            .ToTable("tareas_plantilla");
             
         modelBuilder.Entity<CategoriaFinanciera>()
             .ToTable("categorias_financieras");

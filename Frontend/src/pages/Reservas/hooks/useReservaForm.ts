@@ -241,6 +241,7 @@ export const useReservaForm = (isOpen: boolean, initialDate: Date | null | undef
         pagoInicial: formData.pagoInicial || 0,
         precioTotal: formData.precioFinal || 0,
         tematica: formData.tematica || undefined,
+        notasAdmin: formData.notasAdmin || undefined,
         items: formData.items
       };
 
