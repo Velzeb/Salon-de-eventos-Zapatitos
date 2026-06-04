@@ -50,40 +50,40 @@ const Sidebar = () => {
     {
       label: 'Principal',
       items: [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard', desc: 'Métricas y KPIs' },
-        { icon: Play, label: 'Operativo', path: '/admin/operativo', desc: 'Centro de Mando' },
-        { icon: CalendarDays, label: 'Reservas', path: '/admin/reservas', desc: 'Gestión de Agenda' },
+        { icon: LayoutDashboard, label: 'Resumen', path: '/admin/dashboard', desc: 'Métricas del negocio' },
+        { icon: Play, label: 'Eventos', path: '/admin/operativo', desc: 'Fiestas y operación' },
+        { icon: CalendarDays, label: 'Agenda', path: '/admin/reservas', desc: 'Reservas y calendario' },
       ]
     },
     {
       label: 'Comercial',
       items: [
-        { icon: ShieldCheck, label: 'Servicios', path: '/admin/servicios', desc: 'Catálogo de Venta' },
-        { icon: Layers, label: 'Paquetes', path: '/admin/paquetes', desc: 'Planes y Ofertas' },
+        { icon: ShieldCheck, label: 'Servicios', path: '/admin/servicios', desc: 'Catálogo de venta' },
+        { icon: Layers, label: 'Paquetes', path: '/admin/paquetes', desc: 'Planes y precios' },
       ]
     },
     {
       label: 'Logística',
       items: [
-        { icon: PackageSearch, label: 'Inventario', path: '/admin/inventario', desc: 'Materia Prima' },
-        { icon: Wrench, label: 'Producción', path: '/admin/produccion', desc: 'Fabricación' },
+        { icon: PackageSearch, label: 'Inventario', path: '/admin/inventario', desc: 'Insumos y stock' },
+        { icon: Wrench, label: 'Producción', path: '/admin/produccion', desc: 'Producción interna' },
         { icon: Users, label: 'Proveedores', path: '/admin/proveedores', desc: 'Aliados' },
       ]
     },
     {
       label: 'Finanzas',
       items: [
-        { icon: DollarSign, label: 'Tesorería', path: '/admin/finanzas', desc: 'Flujo de Caja' },
-        { icon: Wallet, label: 'Nóminas', path: '/admin/nominas', desc: 'Pagos Personal' },
+        { icon: DollarSign, label: 'Pagos y caja', path: '/admin/finanzas', desc: 'Ingresos y egresos' },
+        { icon: Wallet, label: 'Pagos al staff', path: '/admin/nominas', desc: 'Eventos finalizados' },
       ]
     },
     {
       label: 'Administración',
       items: [
-        { icon: Users, label: 'Clientes', path: '/admin/clientes', desc: 'CRM y Expedientes' },
+        { icon: Users, label: 'Clientes', path: '/admin/clientes', desc: 'Datos y expedientes' },
         { icon: Users, label: 'Empleados', path: '/admin/empleados', desc: 'Equipo Humano' },
-        { icon: ClipboardList, label: 'Tareas Generales', path: '/admin/tareas-generales', desc: 'Plantillas de Tareas' },
-        { icon: Settings, label: 'Plataforma', path: '/admin/cms', desc: 'Configuración Web' },
+        { icon: ClipboardList, label: 'Plantillas', path: '/admin/tareas-generales', desc: 'Tareas operativas' },
+        { icon: Settings, label: 'Web y chatbot', path: '/admin/cms', desc: 'Landing y asistente' },
       ]
     }
   ];
@@ -94,7 +94,7 @@ const Sidebar = () => {
       if (!isAdmin && group.label === 'Principal') {
         return {
           ...group,
-          items: group.items.filter(item => item.label === 'Operativo')
+          items: group.items.filter(item => item.path === '/admin/operativo')
         };
       }
       return group;
@@ -115,7 +115,7 @@ const Sidebar = () => {
 
       <aside className={`
         fixed inset-y-0 left-0 z-50 flex flex-col bg-bg-dark text-white transition-all duration-700 ease-in-out
-        ${isCollapsed ? 'w-28' : 'w-88'}
+        ${isCollapsed ? 'w-28' : 'w-[22rem]'}
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         md:relative md:flex border-r border-white/5 shadow-[25px_0_80px_rgba(0,0,0,0.2)]
       `}>
@@ -135,7 +135,7 @@ const Sidebar = () => {
                 <div className="flex items-center gap-2 mt-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
                   <span className="text-secondary text-[9px] font-bold uppercase tracking-widest opacity-80">
-                    Control Hub
+                    Operación diaria
                   </span>
                 </div>
               </div>
@@ -189,7 +189,7 @@ const Sidebar = () => {
                     )}
                     
                     {/* NOTIFICATION BADGE */}
-                    {item.label === 'Tesorería' && pendingPaymentsCount > 0 && (
+                    {item.path === '/admin/finanzas' && pendingPaymentsCount > 0 && (
                       <div className={`
                         absolute bg-rose-500 text-white font-black rounded-full flex items-center justify-center animate-pulse shadow-lg shadow-rose-500/20
                         ${isCollapsed 

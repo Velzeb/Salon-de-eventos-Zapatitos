@@ -54,8 +54,9 @@ public static class DbInitializer
             Console.WriteLine("--> Creando configuración web base...");
             var configs = new List<ConfiguracionWeb>
             {
-                new() { Clave = "hero_title", Valor = "Zapatitos - Eventos Infantiles" },
-                new() { Clave = "hero_subtitle", Valor = "Creamos momentos mágicos para tus pequeños" },
+                new() { Clave = "hero_badge", Valor = "¡Bienvenidos a Zapatitos!" },
+                new() { Clave = "hero_title", Valor = "Zapatitos — Magia en cada evento" },
+                new() { Clave = "hero_subtitle", Valor = "Donde la Diversión encuentra la Elegancia" },
                 new() { Clave = "hero_image", Valor = "https://images.unsplash.com/photo-1530103043960-ef38714abb15?q=80&w=2069&auto=format&fit=crop" },
                 new() { Clave = "contact_email", Valor = "contacto@zapatitos.com" },
                 new() { Clave = "promo_banner", Valor = "¡Reserva ahora y obtén un 10% de descuento en el paquete Premium!" }

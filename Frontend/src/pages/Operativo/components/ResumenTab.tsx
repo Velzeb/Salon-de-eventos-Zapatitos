@@ -10,10 +10,14 @@ interface Props {
   onNotasChange: (v: string) => void;
   onSaveNotas: () => void;
   onSetTab: (tab: string) => void;
+  onConfirmar: () => void;
+  onRechazar: () => void;
+  onOpenPagos: () => void;
 }
 
 export default function ResumenTab({
-  data, progreso, riesgosOperativos, notas, savingNotas, onNotasChange, onSaveNotas, onSetTab
+  data, progreso, riesgosOperativos, notas, savingNotas, onNotasChange, onSaveNotas, onSetTab,
+  onConfirmar, onRechazar, onOpenPagos
 }: Props) {
   const estado = data.estado.toLowerCase();
 
@@ -130,8 +134,8 @@ export default function ResumenTab({
                 <h4 className="text-sm font-semibold text-slate-900">Revisión de Reserva</h4>
                 <p className="text-xs text-slate-600 leading-relaxed">Verifica los datos del cliente y confirma para avanzar a la preparación.</p>
                 <div className="flex gap-2 pt-2">
-                  <button onClick={() => onSetTab('__rechazar')} className="flex-1 py-2 bg-white text-rose-700 rounded border border-rose-200 text-xs font-medium hover:bg-rose-50 transition-colors">Rechazar</button>
-                  <button onClick={() => onSetTab('__confirmar')} className="flex-1 py-2 bg-indigo-600 text-white rounded text-xs font-medium hover:bg-indigo-700 transition-colors">Confirmar</button>
+                  <button onClick={onRechazar} className="flex-1 py-2 bg-white text-rose-700 rounded border border-rose-200 text-xs font-medium hover:bg-rose-50 transition-colors">Rechazar</button>
+                  <button onClick={onConfirmar} className="flex-1 py-2 bg-indigo-600 text-white rounded text-xs font-medium hover:bg-indigo-700 transition-colors">Confirmar</button>
                 </div>
               </div>
             )}
@@ -239,7 +243,7 @@ export default function ResumenTab({
                     <p className="text-[10px] font-semibold text-rose-500 uppercase tracking-wider">Saldo Pendiente</p>
                     <p className="text-base font-bold text-rose-700 mt-0.5">${data.saldoPendiente.toLocaleString()}</p>
                   </div>
-                  <button onClick={() => onSetTab('pagos')} className="text-xs text-rose-600 font-semibold hover:underline">Gestionar</button>
+                  <button onClick={onOpenPagos} className="text-xs text-rose-600 font-semibold hover:underline">Gestionar</button>
                 </div>
               </div>
             )}

@@ -236,7 +236,7 @@ const ServiciosPaquetesPage = () => {
 
                           <button 
                             onClick={() => handleSelectPackage(p.id)}
-                            className="w-full py-4.5 bg-slate-900 text-white rounded-[1.8rem] font-black uppercase tracking-widest text-xs hover:bg-primary transition-all shadow-md mt-auto flex items-center justify-center gap-2"
+                            className="w-full py-[1.125rem] bg-slate-900 text-white rounded-[1.8rem] font-black uppercase tracking-widest text-xs hover:bg-primary transition-all shadow-md mt-auto flex items-center justify-center gap-2"
                           >
                             Reservar con este paquete <ArrowRight size={14} />
                           </button>

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Zapatitos.Application.Common.Interfaces;
 using Zapatitos.Application.Common.Models;
 using Zapatitos.Domain.Entities;
+using Zapatitos.Domain.Enums;
 
 namespace Zapatitos.Application.Features.Finanzas.Queries.GetCalculoNomina;
 
@@ -44,7 +45,11 @@ public class GetCalculoNominaQueryHandler : IRequestHandler<GetCalculoNominaQuer
             .Include(a => a.Empleado)
             .Include(a => a.Evento)
                 .ThenInclude(e => e.Paquete)
-            .Where(a => !a.EsPagado && a.Evento.Estado != Zapatitos.Domain.Enums.EstadoEvento.Cancelado && !a.Evento.EliminadoEn.HasValue && !a.EliminadoEn.HasValue)
+            .Where(a =>
+                !a.EsPagado &&
+                (a.Evento.Estado == EstadoEvento.Finalizado || a.Evento.Estado == EstadoEvento.Terminado) &&
+                !a.Evento.EliminadoEn.HasValue &&
+                !a.EliminadoEn.HasValue)
             .ToListAsync(cancellationToken);
 
         var result = asignaciones

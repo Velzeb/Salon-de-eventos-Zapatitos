@@ -352,10 +352,10 @@ const DetalleOperativoPage = () => {
           <div className="px-6 py-5 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h3 className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                <Users size={18} className="text-indigo-500" /> Control de Equipo y Nómina
+                <Users size={18} className="text-indigo-500" /> Equipo asignado y pago staff
               </h3>
               <p className="text-xs text-slate-500 mt-1">
-                Gestiona las asignaciones de personal y realiza los pagos por evento correspondientes.
+                Asigna personal para esta fiesta y revisa si el pago por evento ya fue liquidado.
               </p>
             </div>
             <span className="text-[10px] font-bold uppercase tracking-wider bg-slate-100 border border-slate-200 rounded px-2.5 py-1 text-slate-500">
@@ -444,7 +444,7 @@ const DetalleOperativoPage = () => {
                         <p className="text-xs text-slate-500 truncate">{member.rol}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Monto por Evento</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pago staff por evento</p>
                         <p className="text-sm font-bold text-slate-800">{formatMoney(member.pagoPorEvento || 0)}</p>
                       </div>
                     </div>
@@ -453,7 +453,7 @@ const DetalleOperativoPage = () => {
                       <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded border ${
                         member.esPagado ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-200'
                       }`}>
-                        {member.esPagado ? 'Nómina Pagada' : 'Pago Pendiente'}
+                        {member.esPagado ? 'Staff pagado' : 'Pago staff pendiente'}
                       </span>
 
                       <div className="flex gap-2">
@@ -828,6 +828,9 @@ const DetalleOperativoPage = () => {
           onNotasChange={setNotas}
           onSaveNotas={handleSaveNotas}
           onSetTab={setActiveTab}
+          onConfirmar={() => handleStateChange('Confirmado')}
+          onRechazar={handleCancelEvento}
+          onOpenPagos={() => setIsPaymentsOpen(true)}
         />
       );
     }
@@ -841,8 +844,12 @@ const DetalleOperativoPage = () => {
           onPreferenciasChange={setPreferencias}
           onSavePreferencias={handleSavePreferencias}
           onComplete={async (tareaId) => {
-            await operativoService.completeTarea(tareaId);
-            loadData();
+            try {
+              await operativoService.completeTarea(tareaId);
+              await loadData();
+            } catch (err: any) {
+              toast.error(err.response?.data?.Errors?.[0] || err.response?.data?.errors?.[0] || 'No se pudo completar la tarea');
+            }
           }}
           onAssign={async (tareaId, empleadoId) => {
             await operativoService.assignTarea({ tareaId, empleadoId });
@@ -850,7 +857,7 @@ const DetalleOperativoPage = () => {
           }}
           onReload={loadData}
           eventoId={data.eventoId}
-          onSetTab={setActiveTab}
+          onOpenEquipo={() => setIsStaffOpen(true)}
         />
       );
     }
@@ -1051,7 +1058,7 @@ const DetalleOperativoPage = () => {
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all shadow-sm"
             >
               <Users size={16} className="text-slate-500" />
-              <span>Equipo y Nómina</span>
+              <span>Equipo</span>
               {staffCount > 0 && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                   {staffCount}
@@ -1063,7 +1070,7 @@ const DetalleOperativoPage = () => {
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition-all shadow-sm"
             >
               <DollarSign size={16} className="text-slate-500" />
-              <span>Finanzas y Pagos</span>
+              <span>Pagos del cliente</span>
               {tienePendientesDePago && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-200 animate-pulse">
                   Pendiente
@@ -1103,9 +1110,9 @@ const DetalleOperativoPage = () => {
               <div className="px-6 py-5 bg-white border-b border-slate-200 flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                    <Users size={20} className="text-indigo-500" /> Equipo y Nómina
+                    <Users size={20} className="text-indigo-500" /> Equipo asignado
                   </h3>
-                  <p className="text-xs text-slate-500 mt-1">Gestiona las asignaciones de personal y realiza los pagos.</p>
+                  <p className="text-xs text-slate-500 mt-1">Asigna personal y consulta el estado de pago al staff.</p>
                 </div>
                 <button
                   onClick={() => setIsStaffOpen(false)}
@@ -1147,7 +1154,7 @@ const DetalleOperativoPage = () => {
               <div className="px-6 py-5 bg-white border-b border-slate-200 flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                    <DollarSign size={20} className="text-indigo-500" /> Finanzas y Pagos
+                    <DollarSign size={20} className="text-indigo-500" /> Pagos del cliente
                   </h3>
                   <p className="text-xs text-slate-500 mt-1">Registra nuevos abonos, verifica comprobantes e historial.</p>
                 </div>
@@ -1193,4 +1200,3 @@ const DetalleOperativoPage = () => {
 };
 
 export default DetalleOperativoPage;
-

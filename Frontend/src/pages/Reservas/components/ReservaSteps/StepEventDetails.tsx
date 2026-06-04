@@ -274,7 +274,7 @@ const StepEventDetails = ({
             <div className="relative group">
               <Plus size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-primary group-focus-within:rotate-90 transition-all duration-300" />
               <select 
-                className="w-full bg-white border border-slate-100 rounded-xl pl-16 pr-10 py-4.5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-xs text-slate-400  appearance-none cursor-pointer shadow-sm"
+                className="w-full bg-white border border-slate-100 rounded-xl pl-16 pr-10 py-[1.125rem] outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-xs text-slate-400  appearance-none cursor-pointer shadow-sm"
                 onChange={(e) => {
                   const val = parseInt(e.target.value);
                   if (val) addServiceAsItem(val);
@@ -289,7 +289,7 @@ const StepEventDetails = ({
             <div className="relative group">
               <Plus size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-primary group-focus-within:rotate-90 transition-all duration-300" />
               <select 
-                className="w-full bg-white border border-slate-100 rounded-xl pl-16 pr-10 py-4.5 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-xs text-slate-400  appearance-none cursor-pointer shadow-sm"
+                className="w-full bg-white border border-slate-100 rounded-xl pl-16 pr-10 py-[1.125rem] outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-bold text-xs text-slate-400  appearance-none cursor-pointer shadow-sm"
                 onChange={(e) => {
                   const val = parseInt(e.target.value);
                   if (val) addItemFromInventory(val);
@@ -431,7 +431,6 @@ const StepEventDetails = ({
 };
 
 export default StepEventDetails;
-
 
 
 

@@ -18,11 +18,14 @@ import {
   MessageSquare,
   HelpCircle,
   ExternalLink,
-  Clock
+  Clock,
+  Bot
 } from 'lucide-react';
 import { configService, type ConfigEntry } from '../../services/configService';
 import { paquetesService } from '../../services/paquetesService';
 import { isGoogleMapsEmbedUrl, normalizeGoogleMapsEmbedUrl } from '../../utils/googleMaps';
+import ChatbotAdminPanel from './ChatbotAdminPanel';
+import { landingDefaults } from '../../constants/landingDefaults';
 
 const defaultPastEvents = [
   {
@@ -206,7 +209,7 @@ const CMSPage = () => {
   const [editingFaqIndex, setEditingFaqIndex] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'general' | 'hero' | 'sobre_nosotros' | 'paquetes' | 'fiestas' | 'testimonios' | 'faqs' | 'contacto' | 'pagos'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'hero' | 'sobre_nosotros' | 'paquetes' | 'fiestas' | 'testimonios' | 'faqs' | 'contacto' | 'pagos' | 'chatbot'>('general');
   const [editingSlideIndex, setEditingSlideIndex] = useState<number | null>(null);
 
   useEffect(() => {
@@ -680,7 +683,8 @@ const CMSPage = () => {
           { id: 'testimonios', label: 'Testimonios', icon: Star },
           { id: 'faqs', label: 'Preguntas FAQ', icon: HelpCircle },
           { id: 'contacto', label: 'Contacto y Redes', icon: Phone },
-          { id: 'pagos', label: 'Pagos QR', icon: QrCode }
+          { id: 'pagos', label: 'Pagos QR', icon: QrCode },
+          { id: 'chatbot', label: 'Chatbot', icon: Bot }
         ].map(tab => (
           <button
             key={tab.id}
@@ -1944,6 +1948,8 @@ const CMSPage = () => {
               </div>
             </div>
           )}
+
+          {activeTab === 'chatbot' && <ChatbotAdminPanel />}
         </div>
 
         {/* PREVIEW LIVE CMS */}
@@ -1999,10 +2005,10 @@ const CMSPage = () => {
                       <span className="text-[8px] font-black text-amber-700 uppercase tracking-widest">{configs.hero_badge || '¡Bienvenidos a Zapatitos!'}</span>
                     </div>
                     <h2 className="text-3xl font-display font-black text-bg-dark leading-[1.05] tracking-tight">
-                      {configs.hero_title || 'Zapatitos - Eventos Infantiles'}
+                      {configs.hero_title || landingDefaults.hero_title}
                     </h2>
                     <p className="text-xs font-medium text-slate-500 leading-relaxed">
-                      {configs.hero_subtitle || 'Creamos momentos mágicos para tus pequeños.'}
+                      {configs.hero_subtitle || landingDefaults.hero_subtitle}
                     </p>
                     <div className="flex gap-3">
                       <span className="px-5 py-3 rounded-2xl bg-primary text-white text-[8px] font-black uppercase tracking-widest">Disponibilidad</span>

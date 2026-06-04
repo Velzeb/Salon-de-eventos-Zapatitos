@@ -62,8 +62,8 @@ public class GetEventosQueryHandler : IRequestHandler<GetEventosQuery, Result<IE
                 SaldoPendiente = e.SaldoPendiente,
                 HoraInicio = e.HoraInicio.ToString("hh\\:mm"),
                 HoraFin = e.HoraFin.ToString("hh\\:mm"),
-                TareasTotales = e.Tareas.Count,
-                TareasCompletadas = e.Tareas.Count(t => t.Estado == Domain.Enums.EstadoTarea.Completada),
+                TareasTotales = e.Tareas.Count(t => t.TipoTarea != TipoTareaOperativa.Entrega && !t.EliminadoEn.HasValue),
+                TareasCompletadas = e.Tareas.Count(t => t.TipoTarea != TipoTareaOperativa.Entrega && !t.EliminadoEn.HasValue && t.Estado == EstadoTarea.Completada),
                 StaffAsignadoCount = e.Staff.Count,
                 Origen = e.Origen.ToString()
             })

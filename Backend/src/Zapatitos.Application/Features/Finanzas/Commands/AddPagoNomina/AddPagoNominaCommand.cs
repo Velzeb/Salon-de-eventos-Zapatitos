@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Zapatitos.Application.Common.Interfaces;
 using Zapatitos.Application.Common.Models;
 using Zapatitos.Domain.Entities;
+using Zapatitos.Domain.Enums;
 
 namespace Zapatitos.Application.Features.Finanzas.Commands.AddPagoNomina;
 
@@ -34,7 +35,12 @@ public class AddPagoNominaCommandHandler : IRequestHandler<AddPagoNominaCommand,
 
         var query = _unitOfWork.Repository<AsignacionStaff>().Query()
             .Include(a => a.Evento)
-            .Where(a => a.EmpleadoId == request.EmpleadoId && !a.EsPagado && a.Evento.Estado != Zapatitos.Domain.Enums.EstadoEvento.Cancelado && !a.Evento.EliminadoEn.HasValue);
+            .Where(a =>
+                a.EmpleadoId == request.EmpleadoId &&
+                !a.EsPagado &&
+                (a.Evento.Estado == EstadoEvento.Finalizado || a.Evento.Estado == EstadoEvento.Terminado) &&
+                !a.Evento.EliminadoEn.HasValue &&
+                !a.EliminadoEn.HasValue);
 
         if (request.EventosIds != null && request.EventosIds.Any())
         {
@@ -43,7 +49,7 @@ public class AddPagoNominaCommandHandler : IRequestHandler<AddPagoNominaCommand,
 
         var asignaciones = await query.ToListAsync(cancellationToken);
 
-        if (!asignaciones.Any()) return Result<long>.Failure("No hay eventos pendientes de pago para este empleado en la selección.");
+        if (!asignaciones.Any()) return Result<long>.Failure("No hay eventos finalizados pendientes de pago para este empleado en la selección.");
 
         decimal totalAPagar = asignaciones.Count() * empleado.PagoPorEvento;
 

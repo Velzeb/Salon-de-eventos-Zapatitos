@@ -61,6 +61,7 @@ export interface EventoOperativo {
   items: ItemOperativo[];
   pagos: PagoOperativoDto[];
   clientes: string[];
+  telefonoCliente?: string;
   protagonistas: { nombre: string; edadCumplir: number }[];
   invitacionToken?: string;
 

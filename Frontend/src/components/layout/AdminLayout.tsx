@@ -3,7 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { authService } from '../../services/authService';
 import { eventosService, type Evento } from '../../services/eventosService';
-import { Bell, Search, Zap, Command, Clock, Globe, ArrowRight, Calendar } from 'lucide-react';
+import { Bell, Clock, Globe, ArrowRight, Calendar, PlusCircle, PlayCircle, Wallet } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const AdminLayout = () => {
@@ -74,22 +74,30 @@ const AdminLayout = () => {
         {/* PREMIUM TOP NAVIGATION BAR */}
         <header className="h-28 min-h-[112px] flex items-center justify-between px-12 bg-white/60 backdrop-blur-2xl border-b border-slate-100/80 z-40 sticky top-0 transition-all duration-500">
           <div className="flex items-center gap-10">
-            <div className="hidden lg:flex items-center gap-5 bg-slate-50/50 border border-slate-200/50 rounded-[1.75rem] px-8 py-4.5 w-[450px] transition-all duration-500 focus-within:w-[550px] focus-within:ring-[6px] focus-within:ring-primary/5 focus-within:border-primary/50 focus-within:bg-white group shadow-sm">
-              <Search size={20} className="text-slate-400 group-focus-within:text-primary transition-all group-focus-within:scale-110" />
-              <input 
-                type="text" 
-                placeholder="Comando rápido: Busca reservas, personal o logística..." 
-                className="border-none bg-transparent outline-none text-xs font-bold w-full placeholder:text-slate-400 focus:placeholder:opacity-0 transition-all" 
-              />
-              <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-2 py-1 shadow-sm opacity-50">
-                <Command size={10} className="text-slate-500" />
-                <span className="text-[9px] font-black text-slate-500">K</span>
-              </div>
+            <div className="hidden lg:flex items-center gap-3">
+              <button
+                onClick={() => navigate('/admin/reservas/nueva')}
+                className="flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-5 py-3 text-xs font-black uppercase tracking-widest text-slate-700 hover:text-primary hover:border-primary/40 transition-all shadow-sm"
+              >
+                <PlusCircle size={16} /> Nueva reserva
+              </button>
+              <button
+                onClick={() => navigate('/admin/operativo')}
+                className="flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-5 py-3 text-xs font-black uppercase tracking-widest text-slate-700 hover:text-primary hover:border-primary/40 transition-all shadow-sm"
+              >
+                <PlayCircle size={16} /> Eventos
+              </button>
+              <button
+                onClick={() => navigate('/admin/finanzas')}
+                className="flex items-center gap-2 bg-white border border-slate-200 rounded-2xl px-5 py-3 text-xs font-black uppercase tracking-widest text-slate-700 hover:text-primary hover:border-primary/40 transition-all shadow-sm"
+              >
+                <Wallet size={16} /> Pagos
+              </button>
             </div>
 
             <div className="hidden xl:flex items-center gap-3 text-slate-400 font-black text-[9px] uppercase tracking-[0.3em] bg-slate-100/50 px-4 py-2 rounded-full border border-slate-200/50">
               <Clock size={12} className="text-primary" />
-              <span>Sincronizado: hace 1m</span>
+              <span>{notifications.length} reservas online pendientes</span>
             </div>
           </div>
           
@@ -189,8 +197,12 @@ const AdminLayout = () => {
                 </AnimatePresence>
               </div>
 
-              <button className="hidden sm:flex w-16 h-16 rounded-[1.5rem] bg-white border border-slate-100 items-center justify-center text-slate-400 transition-all duration-500 hover:bg-primary hover:text-bg-dark hover:border-primary hover:shadow-[0_15px_40px_rgba(var(--primary-rgb),0.3)] group active:scale-90">
-                <Zap size={24} />
+              <button
+                onClick={() => navigate('/admin/reservas/nueva')}
+                title="Nueva reserva"
+                className="hidden sm:flex w-16 h-16 rounded-[1.5rem] bg-white border border-slate-100 items-center justify-center text-slate-400 transition-all duration-500 hover:bg-primary hover:text-bg-dark hover:border-primary hover:shadow-[0_15px_40px_rgba(var(--primary-rgb),0.3)] group active:scale-90"
+              >
+                <PlusCircle size={24} />
               </button>
             </div>
 

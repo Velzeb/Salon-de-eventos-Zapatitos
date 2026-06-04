@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { authService } from './services/authService';
 import Toaster from './components/common/Toaster';
 
@@ -72,6 +72,12 @@ const AdminIndexRedirect = () => {
   return <Navigate to="/empleado/jornada" replace />;
 };
 
+const ReservaOperativoRedirect = () => {
+  const { id } = useParams<{ id: string }>();
+  if (!id) return <Navigate to="/admin/operativo" replace />;
+  return <Navigate to={`/admin/operativo/${id}`} replace />;
+};
+
 function App() {
   return (
     <Router>
@@ -119,7 +125,7 @@ function App() {
           {/* Rutas para Empleados y Administradores */}
           <Route path="operativo" element={<OperativoPage />} />
           <Route path="operativo/:id" element={<DetalleOperativoPage />} />
-          <Route path="reservas/:id" element={<Navigate to="../operativo/:id" replace />} />
+          <Route path="reservas/:id" element={<ReservaOperativoRedirect />} />
         </Route>
 
         <Route

@@ -1,17 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RefreshCw, Search, Clock, AlertCircle, Calendar, ClipboardList, PlayCircle, CreditCard, Folder, CheckCircle2 } from 'lucide-react';
+import { RefreshCw, Search, Clock, AlertCircle, Calendar, ClipboardList, PlayCircle, CreditCard, Folder, CheckCircle2, Globe } from 'lucide-react';
 import { eventosService, type Evento } from '../../services/eventosService';
 import { getEstadoEventoBadgeClasses, getEstadoEventoLabel, normalizeEstadoEvento } from '../../utils/estadoEvento';
 
-type OperativoFilter = 'today' | 'ready' | 'live' | 'debt' | 'all';
+type OperativoFilter = 'online' | 'upcoming' | 'today' | 'live' | 'debt' | 'done' | 'all';
 
 const filters: Array<{ id: OperativoFilter; label: string; icon: React.FC<{ size?: number; className?: string }> }> = [
-  { id: 'today', label: 'Hoy', icon: Calendar },
-  { id: 'ready', label: 'Pendientes', icon: ClipboardList },
-  { id: 'live',  label: 'En curso',   icon: PlayCircle },
-  { id: 'debt',  label: 'Por cobrar', icon: CreditCard },
-  { id: 'all',   label: 'Todo',       icon: Folder },
+  { id: 'online',   label: 'Nuevas online', icon: Globe },
+  { id: 'upcoming', label: 'Próximas',       icon: ClipboardList },
+  { id: 'today',    label: 'Hoy',            icon: Calendar },
+  { id: 'live',     label: 'En vivo',        icon: PlayCircle },
+  { id: 'debt',     label: 'Por cobrar',     icon: CreditCard },
+  { id: 'done',     label: 'Finalizadas',    icon: CheckCircle2 },
+  { id: 'all',      label: 'Todo',           icon: Folder },
 ];
 
 const getProgress = (evento: Evento) => {
@@ -28,11 +30,24 @@ const getModalidad = (evento: Evento) => {
 const getTitle = (evento: Evento) =>
   evento.cumpleaneros.length > 0 ? evento.cumpleaneros.join(' & ') : 'Evento especial';
 
+const getLocalDateKey = (value: string) => value.split('T')[0];
+
+const getTodayKey = () => {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const isFinalState = (estado: string) => ['terminado', 'cancelado'].includes(estado);
+const isClosedState = (estado: string) => ['finalizado', 'terminado'].includes(estado);
+
 const OperativoPage = () => {
   const [eventos, setEventos] = useState<Evento[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeFilter, setActiveFilter] = useState<OperativoFilter>('ready');
+  const [activeFilter, setActiveFilter] = useState<OperativoFilter>('upcoming');
   const navigate = useNavigate();
 
   const loadEventos = async () => {
@@ -44,14 +59,16 @@ const OperativoPage = () => {
 
   useEffect(() => { loadEventos(); }, []);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getTodayKey();
 
   const summary = useMemo(() => {
-    const hoy     = eventos.filter(e => e.fechaEvento.startsWith(todayStr)).length;
+    const nuevasOnline = eventos.filter(e => e.origen.toLowerCase() === 'online' && e.estado.toLowerCase() === 'provisional').length;
+    const hoy = eventos.filter(e => getLocalDateKey(e.fechaEvento) === todayStr && !isFinalState(e.estado.toLowerCase())).length;
     const enCurso = eventos.filter(e => e.estado.toLowerCase() === 'encurso').length;
-    const deuda   = eventos.reduce((s, e) => s + e.saldoPendiente, 0);
-    const total   = eventos.filter(e => !['terminado', 'cancelado'].includes(e.estado.toLowerCase())).length;
-    return { hoy, enCurso, deuda, total };
+    const deuda = eventos
+      .filter(e => e.saldoPendiente > 0 && !['cancelado', 'terminado'].includes(e.estado.toLowerCase()))
+      .reduce((s, e) => s + e.saldoPendiente, 0);
+    return { nuevasOnline, hoy, enCurso, deuda };
   }, [eventos, todayStr]);
 
   const filteredEventos = useMemo(() => {
@@ -62,24 +79,31 @@ const OperativoPage = () => {
         const matchesSearch = !q || text.includes(q);
         if (!matchesSearch) return false;
         const estado = e.estado.toLowerCase();
+        const dateKey = getLocalDateKey(e.fechaEvento);
+        const isToday = dateKey === todayStr;
+        const isFuture = dateKey > todayStr;
         switch (activeFilter) {
-          case 'today': return e.fechaEvento.startsWith(todayStr);
-          case 'ready': return getProgress(e) < 100 && estado !== 'encurso' && estado !== 'terminado' && estado !== 'cancelado';
-          case 'live':  return estado === 'encurso';
-          case 'debt':  return e.saldoPendiente > 0;
-          default:      return true;
+          case 'online': return e.origen.toLowerCase() === 'online' && estado === 'provisional';
+          case 'upcoming': return isFuture && !isFinalState(estado) && estado !== 'encurso';
+          case 'today': return isToday && !isFinalState(estado);
+          case 'live': return estado === 'encurso';
+          case 'debt': return e.saldoPendiente > 0 && estado !== 'cancelado' && estado !== 'terminado';
+          case 'done': return isClosedState(estado);
+          default: return true;
         }
       })
       .sort((a, b) => new Date(a.fechaEvento).getTime() - new Date(b.fechaEvento).getTime());
   }, [eventos, searchTerm, activeFilter, todayStr]);
 
   const getDateParts = (value: string) => {
-    const d = new Date(value);
+    const key = getLocalDateKey(value);
+    const [year, month, day] = key.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
     return {
       day:     d.getDate().toString().padStart(2, '0'),
       month:   d.toLocaleDateString('es-ES', { month: 'short' }).replace('.', ''),
       weekday: d.toLocaleDateString('es-ES', { weekday: 'short' }).replace('.', ''),
-      isToday: value.startsWith(todayStr),
+      isToday: key === todayStr,
     };
   };
 
@@ -88,8 +112,8 @@ const OperativoPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Centro de Mando</h1>
-          <p className="text-sm text-slate-500 mt-1">Gestión operativa de eventos</p>
+          <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Eventos y fiestas</h1>
+          <p className="text-sm text-slate-500 mt-1">Cola operativa para revisar, preparar, cobrar y cerrar eventos.</p>
         </div>
         <div className="flex gap-3">
           <div className="relative">
@@ -114,7 +138,7 @@ const OperativoPage = () => {
           { label: 'Hoy',       value: summary.hoy,    color: 'text-slate-900', icon: Calendar, iconColor: 'text-indigo-500' },
           { label: 'En curso',  value: summary.enCurso, color: 'text-slate-900', icon: PlayCircle, iconColor: 'text-emerald-500' },
           { label: 'Por cobrar', value: `$${summary.deuda.toLocaleString()}`, color: 'text-slate-900', icon: CreditCard, iconColor: 'text-rose-500' },
-          { label: 'Activos',   value: summary.total,  color: 'text-slate-900', icon: Folder, iconColor: 'text-slate-400' },
+          { label: 'Nuevas online', value: summary.nuevasOnline, color: 'text-slate-900', icon: Globe, iconColor: 'text-sky-500' },
         ].map(s => (
           <div key={s.label} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm flex items-center justify-between">
             <div>

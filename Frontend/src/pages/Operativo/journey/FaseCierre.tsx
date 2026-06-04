@@ -1,5 +1,6 @@
 import { RefreshCw, UploadCloud, Trash2, FolderLock, ExternalLink, Printer, Edit3, Image as ImageIcon, MessageSquare, HeartHandshake, ArrowLeft } from 'lucide-react';
 import type { EventoOperativo } from '../../../services/operativoService';
+import { toast } from 'sonner';
 
 interface Props {
   evento: EventoOperativo;
@@ -22,13 +23,31 @@ export default function FaseCierre({
   onPostFiestaChange, onSavePostFiesta, onUploadMedia, onDeleteMedia,
   onFinalizar, onPrintHoja, onPrintContrato, onGoBack
 }: Props) {
+  const reviewUrl = import.meta.env.VITE_REVIEW_URL as string | undefined;
+  const clienteTelefono = (evento.telefonoCliente || '').replace(/\D/g, '');
+  const puedeEnviarWhatsApp = clienteTelefono.length >= 8;
+  const puedePedirResena = puedeEnviarWhatsApp && !!reviewUrl;
 
   const handleSendWA = (type: 'fotos' | 'feedback') => {
-    const telefono = '521' + '0000000000'; // CRM Number
-    let msg = type === 'fotos' 
-      ? `¡Hola! 🥳 Aquí tienes las fotos de tu evento: ${postFiesta.linkGaleriaFotos || '[LINK]'}` 
-      : `¡Hola! Nos ayudaría muchísimo si pudieras dejarnos una reseña: [LINK_RESEÑAS]`;
-    window.open(`https://wa.me/${telefono}?text=${encodeURIComponent(msg)}`, '_blank');
+    if (!puedeEnviarWhatsApp) {
+      toast.error('No hay un teléfono válido del cliente para abrir WhatsApp');
+      return;
+    }
+
+    if (type === 'fotos' && !postFiesta.linkGaleriaFotos) {
+      toast.error('Primero guarda el link de la galería de fotos');
+      return;
+    }
+
+    if (type === 'feedback' && !reviewUrl) {
+      toast.error('Configura VITE_REVIEW_URL para pedir reseñas por WhatsApp');
+      return;
+    }
+
+    const msg = type === 'fotos'
+      ? `¡Hola! Aquí tienes las fotos de tu evento: ${postFiesta.linkGaleriaFotos}`
+      : `¡Hola! Nos ayudaría muchísimo si pudieras dejarnos una reseña: ${reviewUrl}`;
+    window.open(`https://wa.me/${clienteTelefono}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
   return (
@@ -63,10 +82,10 @@ export default function FaseCierre({
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <button onClick={() => handleSendWA('fotos')} className="flex items-center justify-center gap-2 p-4 bg-[#25D366]/10 text-[#128C7E] rounded-xl font-bold text-sm hover:bg-[#25D366]/20 transition-colors">
+              <button onClick={() => handleSendWA('fotos')} disabled={!puedeEnviarWhatsApp} className="flex items-center justify-center gap-2 p-4 bg-[#25D366]/10 text-[#128C7E] rounded-xl font-bold text-sm hover:bg-[#25D366]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 <ImageIcon size={16} /> Enviar Fotos
               </button>
-              <button onClick={() => handleSendWA('feedback')} className="flex items-center justify-center gap-2 p-4 bg-[#25D366]/10 text-[#128C7E] rounded-xl font-bold text-sm hover:bg-[#25D366]/20 transition-colors">
+              <button onClick={() => handleSendWA('feedback')} disabled={!puedePedirResena} className="flex items-center justify-center gap-2 p-4 bg-[#25D366]/10 text-[#128C7E] rounded-xl font-bold text-sm hover:bg-[#25D366]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 <MessageSquare size={16} /> Pedir Reseña
               </button>
             </div>

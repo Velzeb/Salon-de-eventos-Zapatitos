@@ -46,6 +46,7 @@ builder.Services.AddAuthentication(options => {
 builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
+builder.Services.AddHttpClient();
 
 // Permitir peticiones desde el Frontend (CORS)
 builder.Services.AddCors(options => {

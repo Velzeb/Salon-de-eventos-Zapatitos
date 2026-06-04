@@ -235,14 +235,14 @@ const Navbar = ({ promoBanner, logoSrc }: { promoBanner?: string; logoSrc?: stri
                 </div>
                 <Link 
                   to={getPortalPath()}
-                  className="bg-purple-50 text-primary text-center py-4.5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-sm"
+                  className="bg-purple-50 text-primary text-center py-[1.125rem] rounded-2xl font-black uppercase tracking-widest text-xs shadow-sm"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   {isAdminOrStaff ? 'Panel de Control' : 'Mis Eventos'}
                 </Link>
                 <button 
                   onClick={() => { setMobileMenuOpen(false); handleLogout(); }}
-                  className="bg-rose-50 text-rose-600 text-center py-4.5 rounded-2xl font-black uppercase tracking-widest text-xs"
+                  className="bg-rose-50 text-rose-600 text-center py-[1.125rem] rounded-2xl font-black uppercase tracking-widest text-xs"
                 >
                   Cerrar Sesión
                 </button>
@@ -258,7 +258,7 @@ const Navbar = ({ promoBanner, logoSrc }: { promoBanner?: string; logoSrc?: stri
                 </Link>
                 <Link 
                   to="/reservar" 
-                  className="bg-gradient-to-r from-primary to-pink-500 text-white text-center py-4.5 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20"
+                  className="bg-gradient-to-r from-primary to-pink-500 text-white text-center py-[1.125rem] rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg shadow-primary/20"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Reservar Online

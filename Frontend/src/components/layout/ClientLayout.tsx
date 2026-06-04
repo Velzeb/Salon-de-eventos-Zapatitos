@@ -4,6 +4,7 @@ import { CalendarPlus, LayoutDashboard, LogOut, UserRound } from 'lucide-react';
 import { authService } from '../../services/authService';
 import { clientePortalService, type PerfilCliente } from '../../services/clientePortalService';
 import logo from '../../assets/logoZapatitos.webp';
+import ChatbotWidget from '../chatbot/ChatbotWidget';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-black transition-all ${
@@ -113,6 +114,7 @@ const ClientLayout = () => {
       <main className="relative mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <Outlet />
       </main>
+      <ChatbotWidget />
     </div>
   );
 };

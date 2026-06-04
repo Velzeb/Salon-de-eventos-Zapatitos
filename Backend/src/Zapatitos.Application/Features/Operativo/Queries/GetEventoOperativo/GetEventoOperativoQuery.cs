@@ -32,6 +32,7 @@ public class EventoOperativoDto
     public List<ItemOperativoDto> Items { get; set; } = new();
     public List<PagoOperativoDto> Pagos { get; set; } = new();
     public List<string> Clientes { get; set; } = new();
+    public string? TelefonoCliente { get; set; }
     public List<CumpleaneroOperativoDto> Protagonistas { get; set; } = new();
     public string? InvitacionToken { get; set; }
 
@@ -157,13 +158,6 @@ public class GetEventoOperativoQueryHandler : IRequestHandler<GetEventoOperativo
     {
         try 
         {
-            Console.WriteLine($"--> Buscando evento con ID: {request.EventoId}");
-            var allIds = await _unitOfWork.Repository<Evento>().Query()
-                .Select(e => e.Id)
-                .ToListAsync(cancellationToken);
-            
-            Console.WriteLine($"--> IDs encontrados en la DB: {string.Join(", ", allIds)}");
-
             var evento = await _unitOfWork.Repository<Evento>().Query()
                 .Include(e => e.Paquete)
                 .Include(e => e.Tareas).ThenInclude(t => t.AsignadoA)
@@ -267,6 +261,9 @@ public class GetEventoOperativoQueryHandler : IRequestHandler<GetEventoOperativo
                     Referencia = p.Referencia
                 }).OrderByDescending(p => p.FechaPago).ToList(),
                 Clientes = evento.ClientesResponsables.Select(c => c.NombreCompleto).ToList(),
+                TelefonoCliente = evento.ClientesResponsables
+                    .Select(c => c.Telefono)
+                    .FirstOrDefault(t => !string.IsNullOrWhiteSpace(t)),
                 Protagonistas = evento.Cumpleaneros.Select(c => new CumpleaneroOperativoDto
                 {
                     Nombre = c.Nino?.Nombre ?? "Sin Nombre",

@@ -18,12 +18,12 @@ interface Props {
   onAssign: (tareaId: number, empleadoId: number) => void;
   onReload: () => Promise<void>;
   eventoId: number;
-  onSetTab: (tab: string) => void;
+  onOpenEquipo: () => void;
 }
 
 export default function PreparacionTab({
   data, allEmpleados, preferencias, savingPreferencias, onPreferenciasChange,
-  onSavePreferencias, onComplete, onAssign, onReload, eventoId, onSetTab
+  onSavePreferencias, onComplete, onAssign, onReload, eventoId, onOpenEquipo
 }: Props) {
   const [showAddModal, setShowAddModal] = useState(false);
   const [servicesCatalog, setServicesCatalog] = useState<Servicio[]>([]);
@@ -273,7 +273,7 @@ export default function PreparacionTab({
             <p className="text-xs text-slate-500 mt-1">Personal asignado a esta fiesta.</p>
           </div>
           <button
-            onClick={() => onSetTab('nomina')}
+            onClick={onOpenEquipo}
             className="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100 px-4 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
           >
             <Users size={14} /> Gestionar Equipo
@@ -303,7 +303,7 @@ export default function PreparacionTab({
             <div className="text-center py-10 border border-dashed border-slate-300 rounded-lg bg-slate-50">
               <Users size={24} className="mx-auto text-slate-300 mb-2" />
               <p className="text-sm font-medium text-slate-600">No hay personal asignado</p>
-              <p className="text-xs text-slate-400 mt-1">Usa la pestaña "Equipo y Nómina" para asignar el equipo.</p>
+              <p className="text-xs text-slate-400 mt-1">Usa el panel "Equipo" para asignar el personal de esta fiesta.</p>
             </div>
           )}
 

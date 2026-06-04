@@ -45,25 +45,24 @@ public class CompleteTareaCommandHandler : IRequestHandler<CompleteTareaCommand,
         }
         else
         {
+            ArticuloInventario? articulo = null;
+            if (tarea.ArticuloInventarioId.HasValue && !tarea.StockDescontado)
+            {
+                articulo = await _unitOfWork.Repository<ArticuloInventario>().GetByIdAsync(tarea.ArticuloInventarioId.Value);
+                if (articulo != null && articulo.StockActual < tarea.CantidadRequerida)
+                {
+                    return Result<bool>.Failure($"Stock insuficiente para '{articulo.Nombre}'. Requerido: {tarea.CantidadRequerida}, disponible: {articulo.StockActual}.");
+                }
+            }
+
             tarea.Estado = EstadoTarea.Completada;
             tarea.FechaCompletada = DateTime.UtcNow;
 
-            // === LÓGICA DE INVENTARIO FASE 6 ===
-            if (tarea.ArticuloInventarioId.HasValue && !tarea.StockDescontado)
+            if (articulo != null)
             {
-                var articulo = await _unitOfWork.Repository<ArticuloInventario>().GetByIdAsync(tarea.ArticuloInventarioId.Value);
-                if (articulo != null)
-                {
-                    articulo.StockActual -= tarea.CantidadRequerida;
-                    tarea.StockDescontado = true;
-                    _unitOfWork.Repository<ArticuloInventario>().Update(articulo);
-                    
-                    // Regla de Negocio: Alerta de Ruptura de Stock
-                    if (articulo.StockActual < 0)
-                    {
-                        Console.WriteLine($"[ALERTA INVENTARIO CRÍTICO] El artículo '{articulo.Nombre}' (ID: {articulo.Id}) ha caído en stock negativo: {articulo.StockActual}.");
-                    }
-                }
+                articulo.StockActual -= tarea.CantidadRequerida;
+                tarea.StockDescontado = true;
+                _unitOfWork.Repository<ArticuloInventario>().Update(articulo);
             }
         }
 

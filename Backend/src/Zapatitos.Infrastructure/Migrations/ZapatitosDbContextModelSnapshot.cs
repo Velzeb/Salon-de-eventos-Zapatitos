@@ -118,6 +118,10 @@ namespace Zapatitos.Infrastructure.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("eliminado_en");
 
+                    b.Property<string>("ImagenUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("imagen_url");
+
                     b.Property<DateTime>("ModificadoEn")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("modificado_en");
@@ -262,6 +266,264 @@ namespace Zapatitos.Infrastructure.Migrations
                     b.ToTable("categorias_financieras", (string)null);
                 });
 
+            modelBuilder.Entity("Zapatitos.Domain.Entities.ChatbotConfig", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ColorPrimario")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("color_primario");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<DateTime?>("EliminadoEn")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("eliminado_en");
+
+                    b.Property<bool>("EscalarAWhatsApp")
+                        .HasColumnType("boolean")
+                        .HasColumnName("escalar_a_whats_app");
+
+                    b.Property<bool>("Habilitado")
+                        .HasColumnType("boolean")
+                        .HasColumnName("habilitado");
+
+                    b.Property<string>("InstruccionesSistema")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("instrucciones_sistema");
+
+                    b.Property<int>("MaxTokens")
+                        .HasColumnType("integer")
+                        .HasColumnName("max_tokens");
+
+                    b.Property<string>("MensajeBienvenida")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("mensaje_bienvenida");
+
+                    b.Property<string>("MensajeFallback")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("mensaje_fallback");
+
+                    b.Property<string>("MisionEmpresa")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("mision_empresa");
+
+                    b.Property<string>("ModeloNombre")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("modelo_nombre");
+
+                    b.Property<string>("ModeloProveedor")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("modelo_proveedor");
+
+                    b.Property<DateTime>("ModificadoEn")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("modificado_en");
+
+                    b.Property<bool>("MostrarEnLanding")
+                        .HasColumnType("boolean")
+                        .HasColumnName("mostrar_en_landing");
+
+                    b.Property<bool>("MostrarEnPortalCliente")
+                        .HasColumnType("boolean")
+                        .HasColumnName("mostrar_en_portal_cliente");
+
+                    b.Property<string>("NombreAsistente")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("nombre_asistente");
+
+                    b.Property<bool>("PermitirConsultarDisponibilidad")
+                        .HasColumnType("boolean")
+                        .HasColumnName("permitir_consultar_disponibilidad");
+
+                    b.Property<bool>("PermitirConsultarEventosCliente")
+                        .HasColumnType("boolean")
+                        .HasColumnName("permitir_consultar_eventos_cliente");
+
+                    b.Property<bool>("PermitirConsultarPaquetes")
+                        .HasColumnType("boolean")
+                        .HasColumnName("permitir_consultar_paquetes");
+
+                    b.Property<bool>("PermitirCrearLeadOReserva")
+                        .HasColumnType("boolean")
+                        .HasColumnName("permitir_crear_lead_o_reserva");
+
+                    b.Property<string>("Personalidad")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("personalidad");
+
+                    b.Property<string>("PosicionWidget")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("posicion_widget");
+
+                    b.Property<string>("Restricciones")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("restricciones");
+
+                    b.Property<decimal>("Temperatura")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("temperatura");
+
+                    b.Property<string>("Tono")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("tono");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.Property<string>("VisionEmpresa")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("vision_empresa");
+
+                    b.Property<string>("WhatsappEscalamiento")
+                        .HasColumnType("text")
+                        .HasColumnName("whatsapp_escalamiento");
+
+                    b.HasKey("Id")
+                        .HasName("pk_chatbot_config");
+
+                    b.ToTable("chatbot_config", (string)null);
+                });
+
+            modelBuilder.Entity("Zapatitos.Domain.Entities.ChatbotConversation", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Canal")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("canal");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<DateTime?>("EliminadoEn")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("eliminado_en");
+
+                    b.Property<DateTime>("ModificadoEn")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("modificado_en");
+
+                    b.Property<string>("Titulo")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("titulo");
+
+                    b.Property<DateTime?>("UltimaInteraccionEn")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("ultima_interaccion_en");
+
+                    b.Property<long>("UsuarioId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("usuario_id");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_chatbot_conversations");
+
+                    b.ToTable("chatbot_conversations", (string)null);
+                });
+
+            modelBuilder.Entity("Zapatitos.Domain.Entities.ChatbotMessage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Contenido")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("contenido");
+
+                    b.Property<long>("ConversationId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("conversation_id");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<DateTime?>("EliminadoEn")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("eliminado_en");
+
+                    b.Property<string>("MetadataJson")
+                        .HasColumnType("text")
+                        .HasColumnName("metadata_json");
+
+                    b.Property<string>("Modelo")
+                        .HasColumnType("text")
+                        .HasColumnName("modelo");
+
+                    b.Property<DateTime>("ModificadoEn")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("modificado_en");
+
+                    b.Property<string>("Rol")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("rol");
+
+                    b.Property<int>("TokensEntrada")
+                        .HasColumnType("integer")
+                        .HasColumnName("tokens_entrada");
+
+                    b.Property<int>("TokensSalida")
+                        .HasColumnType("integer")
+                        .HasColumnName("tokens_salida");
+
+                    b.Property<long>("UsuarioId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("usuario_id");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_chatbot_messages");
+
+                    b.HasIndex("ConversationId")
+                        .HasDatabaseName("ix_chatbot_messages_conversation_id");
+
+                    b.ToTable("chatbot_messages", (string)null);
+                });
+
             modelBuilder.Entity("Zapatitos.Domain.Entities.Cliente", b =>
                 {
                     b.Property<long>("Id")
@@ -286,6 +548,10 @@ namespace Zapatitos.Infrastructure.Migrations
                     b.Property<DateTime?>("FechaNacimiento")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("fecha_nacimiento");
+
+                    b.Property<string>("FotoPerfilUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("foto_perfil_url");
 
                     b.Property<DateTime>("ModificadoEn")
                         .HasColumnType("timestamp without time zone")
@@ -555,6 +821,10 @@ namespace Zapatitos.Infrastructure.Migrations
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("fecha_ingreso");
 
+                    b.Property<string>("FotoPerfilUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("foto_perfil_url");
+
                     b.Property<DateTime>("ModificadoEn")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("modificado_en");
@@ -603,17 +873,9 @@ namespace Zapatitos.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<string>("Alergias")
-                        .HasColumnType("text")
-                        .HasColumnName("alergias");
-
                     b.Property<int>("CantidadNinosEstimada")
                         .HasColumnType("integer")
                         .HasColumnName("cantidad_ninos_estimada");
-
-                    b.Property<string>("ColorManteleria")
-                        .HasColumnType("text")
-                        .HasColumnName("color_manteleria");
 
                     b.Property<bool>("ConsentimientoMarketing")
                         .HasColumnType("boolean")
@@ -673,7 +935,7 @@ namespace Zapatitos.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("origen");
 
-                    b.Property<long>("PaqueteId")
+                    b.Property<long?>("PaqueteId")
                         .HasColumnType("bigint")
                         .HasColumnName("paquete_id");
 
@@ -681,10 +943,6 @@ namespace Zapatitos.Infrastructure.Migrations
                         .HasPrecision(10, 2)
                         .HasColumnType("numeric(10,2)")
                         .HasColumnName("precio_total");
-
-                    b.Property<string>("SaborPastel")
-                        .HasColumnType("text")
-                        .HasColumnName("sabor_pastel");
 
                     b.Property<decimal>("SaldoPendiente")
                         .HasPrecision(10, 2)
@@ -1205,6 +1463,10 @@ namespace Zapatitos.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("Alergias")
+                        .HasColumnType("text")
+                        .HasColumnName("alergias");
+
                     b.Property<DateTime>("CreadoEn")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("creado_en");
@@ -1326,6 +1588,10 @@ namespace Zapatitos.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<string>("ComprobanteUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("comprobante_url");
+
                     b.Property<DateTime>("CreadoEn")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("creado_en");
@@ -1406,6 +1672,10 @@ namespace Zapatitos.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("estado");
+
+                    b.Property<string>("ImagenUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("imagen_url");
 
                     b.Property<DateTime>("ModificadoEn")
                         .HasColumnType("timestamp without time zone")
@@ -1598,6 +1868,10 @@ namespace Zapatitos.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("estado");
+
+                    b.Property<string>("ImagenUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("imagen_url");
 
                     b.Property<DateTime>("ModificadoEn")
                         .HasColumnType("timestamp without time zone")
@@ -1849,6 +2123,10 @@ namespace Zapatitos.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("descripcion");
 
+                    b.Property<int>("DuracionMinutos")
+                        .HasColumnType("integer")
+                        .HasColumnName("duracion_minutos");
+
                     b.Property<DateTime?>("EliminadoEn")
                         .HasColumnType("timestamp without time zone")
                         .HasColumnName("eliminado_en");
@@ -1861,6 +2139,10 @@ namespace Zapatitos.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("estado");
+
+                    b.Property<string>("ImagenUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("imagen_url");
 
                     b.Property<DateTime>("ModificadoEn")
                         .HasColumnType("timestamp without time zone")
@@ -1883,6 +2165,10 @@ namespace Zapatitos.Infrastructure.Migrations
                     b.Property<long?>("ProveedorId")
                         .HasColumnType("bigint")
                         .HasColumnName("proveedor_id");
+
+                    b.Property<bool>("RequiereTemporizador")
+                        .HasColumnType("boolean")
+                        .HasColumnName("requiere_temporizador");
 
                     b.Property<string>("Tipo")
                         .IsRequired()
@@ -1967,6 +2253,10 @@ namespace Zapatitos.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("nombre_tarea");
 
+                    b.Property<long?>("PlantillaId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("plantilla_id");
+
                     b.Property<bool>("StockDescontado")
                         .HasColumnType("boolean")
                         .HasColumnName("stock_descontado");
@@ -1995,7 +2285,63 @@ namespace Zapatitos.Infrastructure.Migrations
                     b.HasIndex("EventoItemId")
                         .HasDatabaseName("ix_tareas_operativas_evento_item_id");
 
+                    b.HasIndex("PlantillaId")
+                        .HasDatabaseName("ix_tareas_operativas_plantilla_id");
+
                     b.ToTable("tareas_operativas", (string)null);
+                });
+
+            modelBuilder.Entity("Zapatitos.Domain.Entities.TareaPlantilla", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("Activa")
+                        .HasColumnType("boolean")
+                        .HasColumnName("activa");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<string>("Descripcion")
+                        .HasColumnType("text")
+                        .HasColumnName("descripcion");
+
+                    b.Property<DateTime?>("EliminadoEn")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("eliminado_en");
+
+                    b.Property<string>("FaseAplicacion")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("fase_aplicacion");
+
+                    b.Property<DateTime>("ModificadoEn")
+                        .HasColumnType("timestamp without time zone")
+                        .HasColumnName("modificado_en");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("nombre");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("integer")
+                        .HasColumnName("orden");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_tareas_plantilla");
+
+                    b.ToTable("tareas_plantilla", (string)null);
                 });
 
             modelBuilder.Entity("Zapatitos.Domain.Entities.Usuario", b =>
@@ -2178,6 +2524,18 @@ namespace Zapatitos.Infrastructure.Migrations
                     b.Navigation("PagoNomina");
                 });
 
+            modelBuilder.Entity("Zapatitos.Domain.Entities.ChatbotMessage", b =>
+                {
+                    b.HasOne("Zapatitos.Domain.Entities.ChatbotConversation", "Conversation")
+                        .WithMany("Mensajes")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_chatbot_messages_chatbot_conversations_conversation_id");
+
+                    b.Navigation("Conversation");
+                });
+
             modelBuilder.Entity("Zapatitos.Domain.Entities.Cliente", b =>
                 {
                     b.HasOne("Zapatitos.Domain.Entities.Usuario", "Usuario")
@@ -2256,8 +2614,6 @@ namespace Zapatitos.Infrastructure.Migrations
                     b.HasOne("Zapatitos.Domain.Entities.Paquete", "Paquete")
                         .WithMany()
                         .HasForeignKey("PaqueteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("fk_eventos_paquetes_paquete_id");
 
                     b.Navigation("Paquete");
@@ -2517,6 +2873,11 @@ namespace Zapatitos.Infrastructure.Migrations
                         .HasForeignKey("EventoItemId")
                         .HasConstraintName("fk_tareas_operativas_evento_items_evento_item_id");
 
+                    b.HasOne("Zapatitos.Domain.Entities.TareaPlantilla", "Plantilla")
+                        .WithMany()
+                        .HasForeignKey("PlantillaId")
+                        .HasConstraintName("fk_tareas_operativas_tareas_plantilla_plantilla_id");
+
                     b.Navigation("ArticuloInventario");
 
                     b.Navigation("AsignadoA");
@@ -2524,6 +2885,8 @@ namespace Zapatitos.Infrastructure.Migrations
                     b.Navigation("Evento");
 
                     b.Navigation("EventoItem");
+
+                    b.Navigation("Plantilla");
                 });
 
             modelBuilder.Entity("eventos_clientes", b =>
@@ -2599,6 +2962,11 @@ namespace Zapatitos.Infrastructure.Migrations
                     b.Navigation("PaquetesDondeSeUsa");
 
                     b.Navigation("UsadoEnRecetas");
+                });
+
+            modelBuilder.Entity("Zapatitos.Domain.Entities.ChatbotConversation", b =>
+                {
+                    b.Navigation("Mensajes");
                 });
 
             modelBuilder.Entity("Zapatitos.Domain.Entities.Evento", b =>

@@ -57,7 +57,7 @@ const HeroSection = ({ title, subtitle, image, badge }: HeroSectionProps) => {
 
   // Custom typography highlighting function
   const renderPlayfulTitle = (fullTitle: string) => {
-    const parts = fullTitle.split('—');
+    const parts = fullTitle.split(/\s+[—–-]\s+/);
     if (parts.length > 1) {
       return (
         <>

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { paquetesService } from '../../services/paquetesService';
 import type { PublicLayoutContext } from '../../components/layout/PublicLayout';
+import { landingDefaults } from '../../constants/landingDefaults';
 
 // Modular Sections
 import HeroSection from './sections/HeroSection';
@@ -36,8 +37,8 @@ const LandingPage = () => {
     <div className="bg-bg-main selection:bg-primary selection:text-white">
       <main>
         <HeroSection
-          title={configs.hero_title || 'Zapatitos — ¡Donde la magia y las sonrisas cobran vida!'}
-          subtitle={configs.hero_subtitle || 'Creamos el cumpleaños de sus sueños con peloteros, shows llenos de sorpresas y risas que recordarán para siempre.'}
+          title={configs.hero_title || landingDefaults.hero_title}
+          subtitle={configs.hero_subtitle || landingDefaults.hero_subtitle}
           image={configs.hero_image}
           badge={configs.hero_badge}
         />

@@ -24,9 +24,17 @@ export default function CierreTab({
   onFinalizar, onPrintHoja, onPrintContrato
 }: Props) {
   const isFinalizadoOrTerminado = ['finalizado', 'terminado'].includes(data.estado.toLowerCase());
+  const reviewUrl = import.meta.env.VITE_REVIEW_URL as string | undefined;
+  const clienteTelefono = (data.telefonoCliente || '').replace(/\D/g, '');
+  const puedeEnviarWhatsApp = clienteTelefono.length >= 8;
+  const puedePedirResena = puedeEnviarWhatsApp && !!reviewUrl;
 
   const handleSendWhatsApp = (tipo: 'fotos' | 'feedback') => {
-    const telefono = '521' + '0000000000'; // FIXME: Necesitamos el teléfono real del cliente en el backend
+    if (!puedeEnviarWhatsApp) {
+      toast.error('No hay un teléfono válido del cliente para abrir WhatsApp');
+      return;
+    }
+
     let mensaje = '';
     
     if (tipo === 'fotos') {
@@ -34,12 +42,16 @@ export default function CierreTab({
         toast.error('Primero guarda el link de la galería de fotos');
         return;
       }
-      mensaje = `¡Hola! Esperamos que hayan disfrutado mucho la fiesta. 🥳 Aquí tienes el enlace para ver y descargar las fotos del evento: ${postFiesta.linkGaleriaFotos}`;
+      mensaje = `¡Hola! Esperamos que hayan disfrutado mucho la fiesta. Aquí tienes el enlace para ver y descargar las fotos del evento: ${postFiesta.linkGaleriaFotos}`;
     } else {
-      mensaje = `¡Hola! Muchas gracias por celebrar con nosotros. Nos ayudaría muchísimo si pudieras dejarnos una breve reseña sobre tu experiencia: [LINK_RESEÑAS]`;
+      if (!reviewUrl) {
+        toast.error('Configura VITE_REVIEW_URL para pedir reseñas por WhatsApp');
+        return;
+      }
+      mensaje = `¡Hola! Muchas gracias por celebrar con nosotros. Nos ayudaría muchísimo si pudieras dejarnos una breve reseña sobre tu experiencia: ${reviewUrl}`;
     }
 
-    const url = `https://wa.me/${telefono}?text=${encodeURIComponent(mensaje)}`;
+    const url = `https://wa.me/${clienteTelefono}?text=${encodeURIComponent(mensaje)}`;
     window.open(url, '_blank');
   };
 
@@ -107,13 +119,17 @@ export default function CierreTab({
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => handleSendWhatsApp('fotos')}
-                className="flex items-center justify-center gap-2 p-2.5 bg-[#25D366]/10 text-[#128C7E] border border-[#25D366]/20 rounded-lg text-xs font-semibold hover:bg-[#25D366]/20 transition-colors"
+                disabled={!puedeEnviarWhatsApp}
+                title={!puedeEnviarWhatsApp ? 'Registra un teléfono del cliente para usar WhatsApp' : undefined}
+                className="flex items-center justify-center gap-2 p-2.5 bg-[#25D366]/10 text-[#128C7E] border border-[#25D366]/20 rounded-lg text-xs font-semibold hover:bg-[#25D366]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <ImageIcon size={14} /> Enviar Fotos (WA)
               </button>
               <button
                 onClick={() => handleSendWhatsApp('feedback')}
-                className="flex items-center justify-center gap-2 p-2.5 bg-[#25D366]/10 text-[#128C7E] border border-[#25D366]/20 rounded-lg text-xs font-semibold hover:bg-[#25D366]/20 transition-colors"
+                disabled={!puedePedirResena}
+                title={!puedeEnviarWhatsApp ? 'Registra un teléfono del cliente para usar WhatsApp' : !reviewUrl ? 'Configura VITE_REVIEW_URL para pedir reseñas' : undefined}
+                className="flex items-center justify-center gap-2 p-2.5 bg-[#25D366]/10 text-[#128C7E] border border-[#25D366]/20 rounded-lg text-xs font-semibold hover:bg-[#25D366]/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <MessageSquare size={14} /> Pedir Reseña (WA)
               </button>

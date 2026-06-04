@@ -66,7 +66,7 @@ const NominasPage = () => {
       const initialPeriods: PeriodState = {};
       data.forEach(n => {
         initialSelection[n.empleadoId] = n.detalles.map(d => d.eventoId);
-        initialPeriods[n.empleadoId] = `Pago de ${n.eventosPendientes} eventos - ${new Date().toLocaleDateString('es-ES')}`;
+        initialPeriods[n.empleadoId] = `Pago staff - ${n.eventosPendientes} eventos finalizados - ${new Date().toLocaleDateString('es-ES')}`;
       });
       setSelectedEvents(initialSelection);
       setCustomPeriods(initialPeriods);
@@ -91,7 +91,7 @@ const NominasPage = () => {
       // Update period text dynamically
       setCustomPeriods(periods => ({
         ...periods,
-        [empleadoId]: `Pago de ${updated.length} eventos - ${new Date().toLocaleDateString('es-ES')}`
+        [empleadoId]: `Pago staff - ${updated.length} eventos finalizados - ${new Date().toLocaleDateString('es-ES')}`
       }));
 
       return {
@@ -130,7 +130,7 @@ const NominasPage = () => {
     }
 
     const total = selectedIds.length * basePago;
-    if (!window.confirm(`¿Confirmas el pago de $${total.toLocaleString()} por ${selectedIds.length} eventos seleccionados? Se registrará como un egreso en caja.`)) return;
+    if (!window.confirm(`¿Confirmas el pago de $${total.toLocaleString()} por ${selectedIds.length} eventos finalizados seleccionados? Se registrará como un egreso en caja.`)) return;
     
     setProcessingId(empleadoId);
     try {
@@ -181,15 +181,22 @@ const NominasPage = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-8 rounded-3xl border border-slate-800 shadow-xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
         <div className="space-y-2 z-10">
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">Control de Nóminas</h1>
-          <p className="text-indigo-200/80 text-sm max-w-xl">Gestiona los honorarios del staff. Selecciona eventos específicos, adjunta comprobantes de pago y lleva un registro detallado.</p>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">Pagos al Staff</h1>
+          <p className="text-indigo-200/80 text-sm max-w-xl">Liquida honorarios por eventos ya finalizados. Cada pago se registra como egreso en caja y queda en el historial del empleado.</p>
         </div>
         <button 
           onClick={loadNominas}
           className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-semibold text-sm transition-all hover:scale-105 shadow-md shadow-indigo-900/20 z-10 self-start md:self-center"
         >
-          <RefreshCw size={18} /> Recalcular Pendientes
+          <RefreshCw size={18} /> Actualizar pendientes
         </button>
+      </div>
+
+      <div className="bg-emerald-50 border border-emerald-100 text-emerald-900 rounded-2xl px-5 py-4 flex items-start gap-3">
+        <CheckCircle2 size={18} className="text-emerald-600 shrink-0 mt-0.5" />
+        <p className="text-sm font-medium leading-relaxed">
+          Esta pantalla sólo muestra eventos en estado finalizado o terminado. Si una fiesta aún está en preparación o en vivo, no aparecerá para pago del staff.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-6">
@@ -216,7 +223,7 @@ const NominasPage = () => {
                       <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-sm text-slate-500 font-medium">
                         <span>Honorarios: <strong className="text-indigo-600">${n.pagoPorEvento}</strong> por evento</span>
                         <span>•</span>
-                        <span>{n.eventosPendientes} eventos pendientes</span>
+                        <span>{n.eventosPendientes} eventos finalizados por liquidar</span>
                       </div>
                     </div>
                   </div>
@@ -250,7 +257,7 @@ const NominasPage = () => {
                     <div className="lg:col-span-2 space-y-4">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-black text-slate-400 uppercase tracking-widest">
-                          Selección de Eventos a Pagar ({selectedIds.length}/{n.eventosPendientes})
+                          Eventos finalizados a pagar ({selectedIds.length}/{n.eventosPendientes})
                         </label>
                         <span className="text-xs font-semibold text-slate-500">
                           {selectedIds.length === n.eventosPendientes ? 'Todos seleccionados' : `${selectedIds.length} seleccionados`}
@@ -309,7 +316,7 @@ const NominasPage = () => {
                         </div>
 
                         <div className="flex items-baseline justify-between border-b border-slate-200 pb-4">
-                          <span className="text-xs font-bold text-slate-500">Eventos a Pagar</span>
+                          <span className="text-xs font-bold text-slate-500">Eventos finalizados</span>
                           <span className="text-sm font-bold text-slate-800">x {selectedIds.length}</span>
                         </div>
 
@@ -326,7 +333,7 @@ const NominasPage = () => {
                           type="text"
                           value={customPeriods[n.empleadoId] || ''}
                           onChange={(e) => setCustomPeriods(prev => ({ ...prev, [n.empleadoId]: e.target.value }))}
-                          placeholder="Ej: Pago de nómina mayo"
+                          placeholder="Ej: Pago staff eventos de mayo"
                           className="w-full text-sm px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all font-medium text-slate-700"
                         />
                       </div>
@@ -417,7 +424,7 @@ const NominasPage = () => {
             </div>
             <div className="text-center">
               <h2 className="text-xl font-extrabold text-slate-800">¡Todo al día!</h2>
-              <p className="text-slate-500 text-sm mt-1">No hay eventos pendientes de cobro para el staff.</p>
+              <p className="text-slate-500 text-sm mt-1">No hay eventos finalizados pendientes de pago para el staff.</p>
             </div>
           </div>
         )}

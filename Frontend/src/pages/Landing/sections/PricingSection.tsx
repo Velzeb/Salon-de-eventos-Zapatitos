@@ -182,7 +182,7 @@ const PricingSection = ({ packages, recommendedPackageId, currencySymbol = '$', 
                     <button 
                       onClick={() => handleSelect(pkg.id)}
                       className={`
-                        w-full py-4.5 rounded-2xl font-black uppercase tracking-widest text-[11px] transition-all active:scale-95 mt-auto
+                        w-full py-[1.125rem] rounded-2xl font-black uppercase tracking-widest text-[11px] transition-all active:scale-95 mt-auto
                         ${pkg.recommended 
                           ? 'candy-bubble-btn' 
                           : 'bg-purple-50 text-primary hover:bg-primary hover:text-white shadow-sm hover:shadow-md'}

@@ -63,6 +63,9 @@ public class ZapatitosDbContext : DbContext
     public DbSet<ConfiguracionWeb> ConfiguracionesWeb => Set<ConfiguracionWeb>();
     public DbSet<DisponibilidadConfig> DisponibilidadConfigs => Set<DisponibilidadConfig>();
     public DbSet<MensajeContacto> MensajesContacto => Set<MensajeContacto>();
+    public DbSet<ChatbotConfig> ChatbotConfigs => Set<ChatbotConfig>();
+    public DbSet<ChatbotConversation> ChatbotConversations => Set<ChatbotConversation>();
+    public DbSet<ChatbotMessage> ChatbotMessages => Set<ChatbotMessage>();
 
     public DbSet<PaqueteServicio> PaqueteServicios => Set<PaqueteServicio>();
 
@@ -184,6 +187,19 @@ public class ZapatitosDbContext : DbContext
 
         modelBuilder.Entity<MensajeContacto>()
             .ToTable("contactos");
+
+        modelBuilder.Entity<ChatbotConfig>()
+            .ToTable("chatbot_config");
+
+        modelBuilder.Entity<ChatbotConversation>(entity => {
+            entity.ToTable("chatbot_conversations");
+            entity.HasMany(c => c.Mensajes)
+                  .WithOne(m => m.Conversation)
+                  .HasForeignKey(m => m.ConversationId);
+        });
+
+        modelBuilder.Entity<ChatbotMessage>()
+            .ToTable("chatbot_messages");
 
         // Mapeo Paquete - Servicio (Con Cantidad)
         modelBuilder.Entity<PaqueteServicio>(entity => {
